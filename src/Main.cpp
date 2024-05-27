@@ -1,6 +1,13 @@
 #include <iostream>
 
-int main() {
-    std::cout << "Hello, world!" << std::endl;
+#include "Game.h"
+
+int main(int argc, char* argv[]) {
+    Game game;
+
+    game.Initialize();
+    game.Run();
+    game.Destroy();
+
     return 0;
 }
