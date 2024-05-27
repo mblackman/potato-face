@@ -31,5 +31,8 @@
 *.out
 *.app
 
+# vscode folder
+.vscode/
+
 # Build folder
 bin/
