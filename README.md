@@ -14,5 +14,5 @@ This engine utilizes:
 Run this command to install the necessary library and tools:
 
 ``` bash
-sudo apt install build-essential libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev libsdl2-mixer-dev liblua5.3-dev lua5.3
+sudo apt install build-essential libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev libsdl2-mixer-dev liblua5.3-dev lua5.3 libspdlog-dev
 ```
