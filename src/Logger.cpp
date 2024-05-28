@@ -1,8 +1,11 @@
-#include <iostream>
+#include "Logger.h"
+
 #include <ctime>
 #include <iomanip>
+#include <iostream>
 
-#include "Logger.h"
+const std::string kRed = "\033[31m";
+const std::string kReset = "\033[0m";
 
 void Logger::Log(const std::string& message) {
     time_t now = time(0);
@@ -15,5 +18,7 @@ void Logger::Err(const std::string& message) {
     time_t now = time(0);
     auto timeinfo = std::localtime(&now);
 
-    std::cout << "ERR | " << std::put_time(timeinfo, "%d-%b-%Y %H:%M:%S") << " - " << message << std::endl;
+    std::cout << kRed <<"ERR | " 
+            << std::put_time(timeinfo, "%d-%b-%Y %H:%M:%S") 
+            << " - " << message << kReset << std::endl;
 }
