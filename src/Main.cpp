@@ -1,7 +1,7 @@
 #include <iostream>
 
-#include "Game.h"
-#include "Logger.h"
+#include "./Game/Game.h"
+#include "./General/Logger.h"
 
 int main(int argc, char* argv[]) {
     Logger::Init();
