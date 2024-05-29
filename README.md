@@ -8,6 +8,7 @@ This engine utilizes:
 - ImGui: <https://github.com/ocornut/imgui>
 - Lua5.3: <https://www.lua.org/>
 - SDL2: <https://www.libsdl.org/>
+- sdplog: <https://github.com/gabime/spdlog>
 
 ## Ubuntu Setup
 
