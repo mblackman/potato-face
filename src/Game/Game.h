@@ -24,9 +24,9 @@ class Game {
     void Render();
     void Setup();
 
-    SDL_Window* _window;
-    SDL_Renderer* _renderer;
-    bool _isRunning;
-    int _millisecondsPreviousFrame = 0;
+    SDL_Window* window_;
+    SDL_Renderer* renderer_;
+    bool is_running_;
+    int milliseconds_previous_frame_ = 0;
     std::unique_ptr<Registry> registry_;
 };

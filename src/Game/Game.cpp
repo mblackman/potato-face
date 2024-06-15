@@ -10,10 +10,10 @@
 #include "../ECS/ECS.h"
 #include "../General/Logger.h"
 
-Game::Game() : _window(nullptr),
-               _renderer(nullptr),
-               _isRunning(false),
-               _millisecondsPreviousFrame() {
+Game::Game() : window_(nullptr),
+               renderer_(nullptr),
+               is_running_(false),
+               milliseconds_previous_frame_() {
     Logger::Info("Game Constructor called.");
     registry_ = std::make_unique<Registry>();
 }
@@ -30,7 +30,7 @@ void Game::Initialize() {
         return;
     }
 
-    _window = SDL_CreateWindow(
+    window_ = SDL_CreateWindow(
         "Potato Face",
         SDL_WINDOWPOS_CENTERED,
         SDL_WINDOWPOS_CENTERED,
@@ -38,31 +38,31 @@ void Game::Initialize() {
         600,
         SDL_WINDOW_SHOWN | SDL_WINDOW_FULLSCREEN);
 
-    if (!_window) {
+    if (!window_) {
         Logger::Err("SDL_CreateWindow Error: " + std::string(SDL_GetError()));
         return;
     }
 
-    _renderer = SDL_CreateRenderer(_window, -1, 0);
+    renderer_ = SDL_CreateRenderer(window_, -1, 0);
 
-    if (!_renderer) {
+    if (!renderer_) {
         Logger::Err("SDL_CreateRenderer Error: " + std::string(SDL_GetError()));
         return;
     }
 
-    _isRunning = true;
+    is_running_ = true;
 }
 
 void Game::Destroy() {
-    SDL_DestroyRenderer(_renderer);
-    SDL_DestroyWindow(_window);
+    SDL_DestroyRenderer(renderer_);
+    SDL_DestroyWindow(window_);
     SDL_Quit();
 }
 
 void Game::Run() {
     Setup();
 
-    while (_isRunning) {
+    while (is_running_) {
         ProcessInput();
         Update();
         Render();
@@ -80,12 +80,12 @@ void Game::ProcessInput() {
     while (SDL_PollEvent(&event)) {
         switch (event.type) {
             case SDL_QUIT:
-                _isRunning = false;
+                is_running_ = false;
                 break;
 
             case SDL_KEYDOWN:
                 if (event.key.keysym.sym == SDLK_ESCAPE) {
-                    _isRunning = false;
+                    is_running_ = false;
                 }
                 break;
 
@@ -97,22 +97,22 @@ void Game::ProcessInput() {
 
 void Game::Update() {
     // If we are too fast, waste some time until we reach the frame time
-    int timeToWait = kMillisecondsPerFrame - (SDL_GetTicks() - _millisecondsPreviousFrame);
+    int timeToWait = kMillisecondsPerFrame - (SDL_GetTicks() - milliseconds_previous_frame_);
     if (timeToWait > 0 && timeToWait <= kMillisecondsPerFrame) {
         SDL_Delay(timeToWait);
     }
 
-    double deltaTime = (SDL_GetTicks() - _millisecondsPreviousFrame) / 1000.0;
+    double deltaTime = (SDL_GetTicks() - milliseconds_previous_frame_) / 1000.0;
 
-    _millisecondsPreviousFrame = SDL_GetTicks();
+    milliseconds_previous_frame_ = SDL_GetTicks();
     // MovementSystem::Update(deltaTime);
 }
 
 void Game::Render() {
-    SDL_SetRenderDrawColor(_renderer, 21, 21, 21, 255);
-    SDL_RenderClear(_renderer);
+    SDL_SetRenderDrawColor(renderer_, 21, 21, 21, 255);
+    SDL_RenderClear(renderer_);
 
     // TODO: Render with ECS
 
-    SDL_RenderPresent(_renderer);
+    SDL_RenderPresent(renderer_);
 }
