@@ -16,7 +16,7 @@ class Pool : public IPool {
     std::vector<T> data_;
 
    public:
-    Pool(int size = 100) {
+    Pool(size_t size = 100) {
         Resize(size);
     }
 
@@ -26,11 +26,11 @@ class Pool : public IPool {
         return data_.empty();
     }
 
-    void GetSize() const {
+    std::size_t GetSize() const {
         return data_.size();
     }
 
-    void Resize(int size) {
+    void Resize(size_t size) {
         data_.resize(size);
     }
 
