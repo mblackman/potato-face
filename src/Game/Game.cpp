@@ -1,6 +1,8 @@
 #include "Game.h"
 #include "../ECS/ECS.h"
 
+#include <memory>
+
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 #include <glm/glm.hpp>
@@ -13,7 +15,7 @@ Game::Game() : _window(nullptr),
                _isRunning(false),
                _millisecondsPreviousFrame() {
     Logger::Info("Game Constructor called.");
-    _registry = new Registry();
+    registry_ = std::make_unique<Registry>();
 }
 
 Game::~Game() {
@@ -69,7 +71,7 @@ void Game::Run() {
 
 void Game::Setup() {
     // Create an entity for the tank
-    auto tank = _registry->CreateEntity();
+    auto tank = registry_->CreateEntity();
 }
 
 void Game::ProcessInput() {

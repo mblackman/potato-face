@@ -1,5 +1,7 @@
 #pragma once
 
+#include <memory>
+
 #include <SDL2/SDL.h>
 
 #include "../ECS/ECS.h"
@@ -26,5 +28,5 @@ class Game {
     SDL_Renderer* _renderer;
     bool _isRunning;
     int _millisecondsPreviousFrame = 0;
-    Registry* _registry;
+    std::unique_ptr<Registry> registry_;
 };

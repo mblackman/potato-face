@@ -5,6 +5,7 @@
 #include <typeindex>
 #include <unordered_map>
 #include <vector>
+#include <memory>
 
 #include "../General/Pool.h"
 
@@ -102,20 +103,14 @@ class Registry {
 
     // Each pool at an index corresponds to a component type.
     // [Pool index = entity id]
-    std::vector<IPool*> component_pools_;
+    std::vector<std::shared_ptr<IPool>> component_pools_;
 
     // Component signatures are used to track which components are present in
     // an entity and which entities a system is interested in.
     std::vector<Signature> entity_component_signatures_;
 
     // A map of the systems that are registered with the registry.
-    std::unordered_map<std::type_index, System*> systems_;
-
-    template <typename T>
-    void AddComponent(const Entity entity, const T component);
-
-    template <typename T>
-    void AddSystem(const T* system);
+    std::unordered_map<std::type_index, std::shared_ptr<System>> systems_;
 
    public:
     Registry() = default;
@@ -126,9 +121,6 @@ class Registry {
     void DestroyEntity(const Entity entity);
 
     // System management
-    template <typename T>
-    void AddSystem();
-
     template <typename T, typename... TArgs>
     void AddSystem(TArgs&&... args);
 
@@ -144,9 +136,6 @@ class Registry {
     void AddEntityToSystems(const Entity entity);
 
     // Component management
-    template <typename T>
-    void AddComponent(const Entity entity);
-
     template <typename T, typename... TArgs>
     void AddComponent(const Entity entity, TArgs&&... args);
 

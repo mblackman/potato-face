@@ -54,21 +54,10 @@ Entity Registry::CreateEntity() {
 void Registry::DestroyEntity(const Entity entity) {
 }
 
-template <typename T>
-void Registry::AddSystem() {
-    T* newSystem();
-    AddSystem<T>(newSystem);
-}
-
 template <typename T, typename... TArgs>
 void Registry::AddSystem(TArgs&&... args) {
-    T* newSystem(std::forward<TArgs>(args)...);
-    AddSystem<T>(newSystem);
-}
-
-template <typename T>
-void Registry::AddSystem(const T* system) {
-    systems_.insert(std::make_pair(std::type_index(typeid(T)), system));
+    auto newSystem = std::make_shared<T>(std::forward<TArgs>(args)...);
+    systems_.insert(std::make_pair(std::type_index(typeid(T)), newSystem));
 }
 
 template <typename T>
@@ -118,20 +107,9 @@ void Registry::Update() {
     entities_to_add_.clear();
 }
 
-template <typename T>
-void Registry::AddComponent(const Entity entity) {
-    T newComponent;
-    AddComponent<T>(entity, newComponent);
-}
-
 template <typename T, typename... TArgs>
 void Registry::AddComponent(const Entity entity, TArgs&&... args) {
-    T newComponent(std::forward<TArgs>(args)...);
-    AddComponent<T>(entity, newComponent);
-}
-
-template <typename T>
-void Registry::AddComponent(const Entity entity, const T component) {
+    auto newComponent = std::make_shared<T>(std::forward<TArgs>(args)...);
     const auto componentId = Component<T>::GetId();
     const auto entityId = entity.GetId();
 
@@ -140,17 +118,17 @@ void Registry::AddComponent(const Entity entity, const T component) {
     }
 
     if (!component_pools_[componentId]) {
-        Pool<T> newComponentPool = new Pool<T>();
+        auto newComponentPool = std::make_shared<Pool<T>>();
         component_pools_[componentId] = newComponentPool;
     }
 
-    auto componentPool = component_pools_[componentId];
+    auto componentPool = std::static_pointer_cast<Pool<T>>(component_pools_[componentId]);
 
     if (entityId >= componentPool->GetSize()) {
         componentPool.resize(num_entities_);
     }
 
-    componentPool->Set(entityId, component);
+    componentPool->Set(entityId, newComponent);
 
     entity_component_signatures_[entityId].set(componentId);
 
