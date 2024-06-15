@@ -74,8 +74,8 @@ void Game::Run() {
 void Game::Setup() {
     // Create an entity for the tank
     auto tank = registry_->CreateEntity();
-    registry_->AddComponent<TransformComponent>(tank, glm::vec2(10, 30), glm::vec2(1, 1), 0.0);
-    registry_->AddComponent<RigidBodyComponent>(tank, glm::vec2(10, 0));
+    tank.AddComponent<TransformComponent>(glm::vec2(10, 30), glm::vec2(1, 1), 0.0);
+    tank.AddComponent<RigidBodyComponent>(glm::vec2(10, 0));
 }
 
 void Game::ProcessInput() {

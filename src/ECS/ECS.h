@@ -33,9 +33,10 @@ class Component : public IComponent {
 class Entity {
    private:
     int id_;
+    class Registry* registry_;
 
    public:
-    Entity(int id) : id_(id) {}
+    Entity(int id, Registry* registry) : id_(id), registry_(registry) {}
 
     int GetId() const {
         return id_;
@@ -64,6 +65,18 @@ class Entity {
     bool operator>=(const Entity& other) const {
         return id_ >= other.id_;
     }
+
+    template <typename T, typename... TArgs>
+    void AddComponent(TArgs&&... args);
+
+    template <typename T>
+    void RemoveComponent();
+
+    template <typename T>
+    bool HasComponent() const;
+
+    template <typename T>
+    T& GetComponent() const;
 };
 
 class System {
@@ -153,12 +166,35 @@ class Registry {
     void Update();
 };
 
+// Entity implementations
+template <typename T, typename... TArgs>
+void Entity::AddComponent(TArgs&&... args) {
+    registry_->AddComponent<T>(*this, std::forward<TArgs>(args)...);
+}
+
+template <typename T>
+void Entity::RemoveComponent() {
+    registry_->RemoveComponent<T>(*this);
+}
+
+template <typename T>
+bool Entity::HasComponent() const {
+    return registry_->HasComponent<T>();
+}
+
+template <typename T>
+T& Entity::GetComponent() const {
+    return registry_->GetComponent<T>();
+}
+
+// System Implementations
 template <typename T>
 void System::RequireComponent() {
     const auto componentId = Component<T>::GetId();
     component_signature_.set(componentId);
 }
 
+// Registry implementations
 template <typename T, typename... TArgs>
 void Registry::AddSystem(TArgs&&... args) {
     auto newSystem = std::make_shared<T>(std::forward<TArgs>(args)...);

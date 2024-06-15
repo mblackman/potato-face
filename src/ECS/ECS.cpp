@@ -32,8 +32,9 @@ void System::Update(double deltaTime) const {
 
 Entity Registry::CreateEntity() {
     std::size_t entityId = num_entities_++;
-
-    Entity entity(entityId);
+    Logger::Info("Creating Entity");
+    Entity entity(entityId, this);
+    Logger::Info("Created Entity");
     entities_to_add_.insert(entity);
 
     if (entityId >= entity_component_signatures_.size()) {
