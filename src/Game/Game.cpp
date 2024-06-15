@@ -1,21 +1,23 @@
 #include "Game.h"
+#include "../ECS/ECS.h"
 
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 #include <glm/glm.hpp>
 
+#include "../ECS/ECS.h"
 #include "../General/Logger.h"
-
-glm::vec2 playerPosition;
-glm::vec2 playerVelocity;
 
 Game::Game() : _window(nullptr),
                _renderer(nullptr),
                _isRunning(false),
                _millisecondsPreviousFrame() {
+    Logger::Info("Game Constructor called.");
+    _registry = new Registry();
 }
 
 Game::~Game() {
+    Logger::Info("Game Destructor called.");
 }
 
 void Game::Initialize() {
@@ -66,8 +68,8 @@ void Game::Run() {
 }
 
 void Game::Setup() {
-    playerPosition = glm::vec2(10.0, 20.0);
-    playerVelocity = glm::vec2(100.0, 0.0);
+    // Create an entity for the tank
+    auto tank = _registry->CreateEntity();
 }
 
 void Game::ProcessInput() {
@@ -101,29 +103,14 @@ void Game::Update() {
     double deltaTime = (SDL_GetTicks() - _millisecondsPreviousFrame) / 1000.0;
 
     _millisecondsPreviousFrame = SDL_GetTicks();
-    Logger::Log("deltaTime: " + std::to_string(deltaTime));
-    playerPosition.x += playerVelocity.x * deltaTime;
-    playerPosition.y += playerVelocity.y * deltaTime;
+    // MovementSystem::Update(deltaTime);
 }
 
 void Game::Render() {
     SDL_SetRenderDrawColor(_renderer, 21, 21, 21, 255);
     SDL_RenderClear(_renderer);
 
-    // Loads a PNG texture
-    SDL_Surface* surface = IMG_Load("./assets/images/tank-tiger-right.png");
-    SDL_Texture* texture = SDL_CreateTextureFromSurface(_renderer, surface);
-    SDL_FreeSurface(surface);
-
-    // What is the destination rectangle that we want to place our texture
-    SDL_Rect dstRect = {
-        static_cast<int>(playerPosition.x), 
-        static_cast<int>(playerPosition.y), 
-        32,
-        32
-    };
-    SDL_RenderCopy(_renderer, texture, NULL, &dstRect);
-    SDL_DestroyTexture(texture);
+    // TODO: Render with ECS
 
     SDL_RenderPresent(_renderer);
 }

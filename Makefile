@@ -4,7 +4,8 @@ COMPILER_FLAGS = -Wall -Wfatal-errors
 INCLUDE_PATH = -I "./libs"
 SRC_FILES = ./src/*.cpp \
 			./src/Game/*.cpp \
-			./src/General/*.cpp
+			./src/General/*.cpp \
+			./src/ECS/*.cpp
 LINKER_FLAGS = -lSDL2 -lSDL2_image -lSDL2_ttf -lSDL2_mixer -llua5.3
 OBJ_NAME = bin/gameengine
 
