@@ -25,16 +25,13 @@ void System::RemoveEntity(const Entity entity) {
                     entities_.end());
 }
 
-void System::Update(double deltaTime) const {
-}
-
 // Registry implementation
 
 Entity Registry::CreateEntity() {
     std::size_t entityId = num_entities_++;
-    Logger::Info("Creating Entity");
+
     Entity entity(entityId, this);
-    Logger::Info("Created Entity");
+
     entities_to_add_.insert(entity);
 
     if (entityId >= entity_component_signatures_.size()) {
@@ -47,4 +44,29 @@ Entity Registry::CreateEntity() {
 }
 
 void Registry::DestroyEntity(const Entity entity) {
+}
+
+void Registry::AddEntityToSystems(Entity entity) {
+    const auto entityId = entity.GetId();
+
+    const auto& entityComponentSignature = entity_component_signatures_[entityId];
+    
+    for (auto& system: systems_) {
+        const auto& systemComponentSignature = system.second->GetComponentSignature();
+
+        bool isInterested = (entityComponentSignature & systemComponentSignature) == systemComponentSignature;
+
+        if (isInterested) {
+            system.second->AddEntity(entity);
+        }
+    }
+}
+
+void Registry::Update() {
+    for (auto entity : entities_to_add_) {
+        entities_.push_back(entity);
+        AddEntityToSystems(entity);
+    }
+
+    entities_to_add_.clear();
 }

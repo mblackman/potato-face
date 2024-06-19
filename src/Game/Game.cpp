@@ -11,6 +11,7 @@
 #include "../General/Logger.h"
 #include "../Components/TransformComponent.h"
 #include "../Components/RigidBodyComponent.h"
+#include "../Systems/MovementSystem.h"
 
 Game::Game() : window_(nullptr),
                renderer_(nullptr),
@@ -28,7 +29,7 @@ void Game::Initialize() {
     auto result = SDL_Init(SDL_INIT_EVERYTHING);
 
     if (result != 0) {
-        Logger::Err("SDL_Init Error: " + std::string(SDL_GetError()));
+        Logger::Error("SDL_Init Error: " + std::string(SDL_GetError()));
         return;
     }
 
@@ -41,14 +42,14 @@ void Game::Initialize() {
         SDL_WINDOW_SHOWN | SDL_WINDOW_FULLSCREEN);
 
     if (!window_) {
-        Logger::Err("SDL_CreateWindow Error: " + std::string(SDL_GetError()));
+        Logger::Error("SDL_CreateWindow Error: " + std::string(SDL_GetError()));
         return;
     }
 
     renderer_ = SDL_CreateRenderer(window_, -1, 0);
 
     if (!renderer_) {
-        Logger::Err("SDL_CreateRenderer Error: " + std::string(SDL_GetError()));
+        Logger::Error("SDL_CreateRenderer Error: " + std::string(SDL_GetError()));
         return;
     }
 
@@ -72,6 +73,8 @@ void Game::Run() {
 }
 
 void Game::Setup() {
+    registry_->AddSystem<MovementSystem>();
+
     // Create an entity for the tank
     auto tank = registry_->CreateEntity();
     tank.AddComponent<TransformComponent>(glm::vec2(10, 30), glm::vec2(1, 1), 0.0);
@@ -109,7 +112,10 @@ void Game::Update() {
     double deltaTime = (SDL_GetTicks() - milliseconds_previous_frame_) / 1000.0;
 
     milliseconds_previous_frame_ = SDL_GetTicks();
-    // MovementSystem::Update(deltaTime);
+
+    registry_->GetSystem<MovementSystem>().Update(deltaTime);
+
+    registry_->Update();
 }
 
 void Game::Render() {

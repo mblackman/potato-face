@@ -6,6 +6,7 @@
 #include <typeindex>
 #include <unordered_map>
 #include <vector>
+#include <stdexcept>
 
 #include "../General/Logger.h"
 #include "../General/Pool.h"
@@ -131,6 +132,8 @@ class Registry {
     Registry() = default;
     ~Registry() = default;
 
+    void Update();
+
     // Entity management
     Entity CreateEntity();
     void DestroyEntity(const Entity entity);
@@ -146,7 +149,7 @@ class Registry {
     bool HasSystem() const;
 
     template <typename T>
-    System* GetSystem() const;
+    T& GetSystem() const;
 
     void AddEntityToSystems(const Entity entity);
 
@@ -162,8 +165,6 @@ class Registry {
 
     template <typename T>
     T& GetComponent(const Entity entity) const;
-
-    void Update();
 };
 
 // Entity implementations
@@ -179,12 +180,12 @@ void Entity::RemoveComponent() {
 
 template <typename T>
 bool Entity::HasComponent() const {
-    return registry_->HasComponent<T>();
+    return registry_->HasComponent<T>(*this);
 }
 
 template <typename T>
 T& Entity::GetComponent() const {
-    return registry_->GetComponent<T>();
+    return registry_->GetComponent<T>(*this);
 }
 
 // System Implementations
@@ -216,14 +217,9 @@ bool Registry::HasSystem() const {
 }
 
 template <typename T>
-System* Registry::GetSystem() const {
+T& Registry::GetSystem() const {
     auto it = systems_.find(std::type_index(typeid(T)));
-
-    if (it != systems_.end()) {
-        return *(std::static_pointer_cast<T>(it->second));
-    }
-
-    return nullptr;
+    return *(std::static_pointer_cast<T>(it->second));
 }
 
 template <typename T, typename... TArgs>
@@ -271,4 +267,14 @@ bool Registry::HasComponent(const Entity entity) const {
 
 template <typename T>
 T& Registry::GetComponent(const Entity entity) const {
+    const auto componentId = Component<T>::GetId();
+    const auto entityId = entity.GetId();
+
+    if (!component_pools_[componentId]) {
+        throw std::runtime_error("Component pool not found for component: " + std::to_string(componentId));
+    }
+
+    auto componentPool = std::static_pointer_cast<Pool<T>>(component_pools_[componentId]);
+
+    return componentPool->Get(entityId);
 }

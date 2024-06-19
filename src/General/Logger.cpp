@@ -8,7 +8,7 @@ void Logger::Init() {
 void Logger::Log(const std::string& message) {
     spdlog::info(message);
 }
-void Logger::Err(const std::string& message) {
+void Logger::Error(const std::string& message) {
     spdlog::error(message);
 }
 void Logger::Warn(const std::string& message) {
