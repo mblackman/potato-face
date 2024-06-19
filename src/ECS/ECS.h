@@ -100,8 +100,6 @@ class System {
     void AddEntity(const Entity entity);
     void RemoveEntity(const Entity entity);
 
-    void Update(double delta_time) const;
-
     template <typename T>
     void RequireComponent();
 };

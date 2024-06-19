@@ -1,9 +1,10 @@
 #pragma once
 
-#include <memory>
-
 #include <SDL2/SDL.h>
 
+#include <memory>
+
+#include "../AssetManager/AssetManager.h"
 #include "../ECS/ECS.h"
 
 const int kFps = 60;
@@ -29,4 +30,5 @@ class Game {
     bool is_running_;
     int milliseconds_previous_frame_ = 0;
     std::unique_ptr<Registry> registry_;
+    std::unique_ptr<AssetManager> asset_manager_;
 };
