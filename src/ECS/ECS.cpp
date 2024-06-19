@@ -50,8 +50,8 @@ void Registry::AddEntityToSystems(Entity entity) {
     const auto entityId = entity.GetId();
 
     const auto& entityComponentSignature = entity_component_signatures_[entityId];
-    
-    for (auto& system: systems_) {
+
+    for (auto& system : systems_) {
         const auto& systemComponentSignature = system.second->GetComponentSignature();
 
         bool isInterested = (entityComponentSignature & systemComponentSignature) == systemComponentSignature;

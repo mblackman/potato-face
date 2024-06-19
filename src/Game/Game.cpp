@@ -1,21 +1,21 @@
 #include "Game.h"
 
-#include <memory>
-#include <iostream>
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_image.h>
+
 #include <fstream>
+#include <glm/glm.hpp>
+#include <iostream>
+#include <memory>
 #include <sstream>
 #include <string>
 #include <vector>
 
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_image.h>
-#include <glm/glm.hpp>
-
-#include "../ECS/ECS.h"
-#include "../General/Logger.h"
-#include "../Components/TransformComponent.h"
 #include "../Components/RigidBodyComponent.h"
 #include "../Components/SpriteComponent.h"
+#include "../Components/TransformComponent.h"
+#include "../ECS/ECS.h"
+#include "../General/Logger.h"
 #include "../Systems/MovementSystem.h"
 #include "../Systems/RenderSystem.h"
 
@@ -106,18 +106,18 @@ void Game::LoadLevel(int level) {
         std::vector<std::string> row;
         columnNumber = 0;
 
-        while (std::getline(ss, value, ',')) { 
+        while (std::getline(ss, value, ',')) {
             row.push_back(value);
         }
 
         for (const auto& item : row) {
             int value = std::stoi(item);
-            int rowIndex = value / tileMapColumns; 
+            int rowIndex = value / tileMapColumns;
             int columnIndex = value % tileMapColumns;
 
             auto tile = registry_->CreateEntity();
             tile.AddComponent<TransformComponent>(glm::vec2(tileWidth * columnNumber * tileMapScale, tileHeight * rowNumber * tileMapScale), glm::vec2(tileMapScale, tileMapScale), 0.0);
-            tile.AddComponent<SpriteComponent>("jungle-tile-map", tileWidth, tileHeight, tileWidth * columnIndex, tileHeight * rowIndex);
+            tile.AddComponent<SpriteComponent>("jungle-tile-map", tileWidth, tileHeight, 0, tileWidth * columnIndex, tileHeight * rowIndex);
             columnNumber++;
         }
 
@@ -128,13 +128,13 @@ void Game::LoadLevel(int level) {
     auto tank = registry_->CreateEntity();
     tank.AddComponent<TransformComponent>(glm::vec2(10, 30), glm::vec2(3, 3), 45.0);
     tank.AddComponent<RigidBodyComponent>(glm::vec2(10, 0));
-    tank.AddComponent<SpriteComponent>("tank-image", 32, 32);
+    tank.AddComponent<SpriteComponent>("tank-image", 32, 32, 1);
 
     // Create an entity for the truck
     auto truck = registry_->CreateEntity();
     truck.AddComponent<TransformComponent>(glm::vec2(50, 100), glm::vec2(1, 1), 0.0);
     truck.AddComponent<RigidBodyComponent>(glm::vec2(0, 50));
-    truck.AddComponent<SpriteComponent>("truck-image", 10, 50);
+    truck.AddComponent<SpriteComponent>("truck-image", 10, 50, 1);
 }
 
 void Game::Setup() {

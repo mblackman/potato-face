@@ -1,4 +1,5 @@
 #include "Logger.h"
+
 #include <spdlog/spdlog.h>
 
 void Logger::Init() {

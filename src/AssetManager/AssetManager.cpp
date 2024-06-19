@@ -6,7 +6,6 @@
 #include "../General/Logger.h"
 
 AssetManager::AssetManager() {
-
 }
 
 AssetManager::~AssetManager() {
@@ -14,7 +13,7 @@ AssetManager::~AssetManager() {
 }
 
 void AssetManager::ClearAssets() {
-    for (auto texture: textures_) {
+    for (auto texture : textures_) {
         SDL_DestroyTexture(texture.second);
     }
     textures_.clear();

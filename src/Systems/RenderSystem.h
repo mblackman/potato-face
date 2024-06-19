@@ -2,6 +2,8 @@
 
 #include <SDL2/SDL.h>
 
+#include <algorithm>
+
 #include "../AssetManager/AssetManager.h"
 #include "../Components/SpriteComponent.h"
 #include "../Components/TransformComponent.h"
@@ -17,7 +19,17 @@ class RenderSystem : public System {
     ~RenderSystem() = default;
 
     void Update(SDL_Renderer* renderer, std::unique_ptr<AssetManager>& assetManager) {
-        for (auto entity : GetEntities()) {
+        auto entities = GetEntities();
+        std::sort(
+            entities.begin(),
+            entities.end(),
+            [](Entity a, Entity b) {
+                const auto spriteA = a.GetComponent<SpriteComponent>();
+                const auto spriteB = b.GetComponent<SpriteComponent>();
+                return spriteA.zIndex < spriteB.zIndex;
+            });
+
+        for (auto entity : entities) {
             const auto transform = entity.GetComponent<TransformComponent>();
             const auto sprite = entity.GetComponent<SpriteComponent>();
 
