@@ -24,6 +24,7 @@ class Game {
     void Update();
     void Render();
     void Setup();
+    void LoadLevel(int level);
 
     SDL_Window* window_;
     SDL_Renderer* renderer_;

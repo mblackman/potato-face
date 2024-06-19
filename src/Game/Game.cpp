@@ -1,7 +1,11 @@
 #include "Game.h"
-#include "../ECS/ECS.h"
 
 #include <memory>
+#include <iostream>
+#include <fstream>
+#include <sstream>
+#include <string>
+#include <vector>
 
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
@@ -75,7 +79,7 @@ void Game::Run() {
     }
 }
 
-void Game::Setup() {
+void Game::LoadLevel(int level) {
     // Add systems
     registry_->AddSystem<MovementSystem>();
     registry_->AddSystem<RenderSystem>();
@@ -83,6 +87,42 @@ void Game::Setup() {
     // Add assets to asset manager
     asset_manager_->AddTexture(renderer_, "tank-image", "./assets/images/tank-panther-right.png");
     asset_manager_->AddTexture(renderer_, "truck-image", "./assets/images/truck-ford-right.png");
+
+    // Load Tilemap
+    asset_manager_->AddTexture(renderer_, "jungle-tile-map", "./assets/tilemaps/jungle.png");
+
+    std::ifstream file("./assets/tilemaps/jungle.map");
+    std::string line;
+    int tileMapColumns = 10;
+    int rowNumber = 0;
+    int columnNumber = 0;
+    int tileWidth = 32;
+    int tileHeight = 32;
+    double tileMapScale = 1.0;
+
+    while (std::getline(file, line)) {
+        std::stringstream ss(line);
+        std::string value;
+        std::vector<std::string> row;
+        columnNumber = 0;
+
+        while (std::getline(ss, value, ',')) { 
+            row.push_back(value);
+        }
+
+        for (const auto& item : row) {
+            int value = std::stoi(item);
+            int rowIndex = value / tileMapColumns; 
+            int columnIndex = value % tileMapColumns;
+
+            auto tile = registry_->CreateEntity();
+            tile.AddComponent<TransformComponent>(glm::vec2(tileWidth * columnNumber * tileMapScale, tileHeight * rowNumber * tileMapScale), glm::vec2(tileMapScale, tileMapScale), 0.0);
+            tile.AddComponent<SpriteComponent>("jungle-tile-map", tileWidth, tileHeight, tileWidth * columnIndex, tileHeight * rowIndex);
+            columnNumber++;
+        }
+
+        rowNumber++;
+    }
 
     // Create an entity for the tank
     auto tank = registry_->CreateEntity();
@@ -95,6 +135,10 @@ void Game::Setup() {
     truck.AddComponent<TransformComponent>(glm::vec2(50, 100), glm::vec2(1, 1), 0.0);
     truck.AddComponent<RigidBodyComponent>(glm::vec2(0, 50));
     truck.AddComponent<SpriteComponent>("truck-image", 10, 50);
+}
+
+void Game::Setup() {
+    LoadLevel(1);
 }
 
 void Game::ProcessInput() {
