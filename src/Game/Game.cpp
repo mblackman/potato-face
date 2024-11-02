@@ -12,12 +12,14 @@
 #include <vector>
 
 #include "../Components/AnimationComponent.h"
+#include "../Components/BoxColliderComponent.h"
 #include "../Components/RigidBodyComponent.h"
 #include "../Components/SpriteComponent.h"
 #include "../Components/TransformComponent.h"
 #include "../ECS/ECS.h"
 #include "../General/Logger.h"
 #include "../Systems/AnimationSystem.h"
+#include "../Systems/CollisionSystem.h"
 #include "../Systems/MovementSystem.h"
 #include "../Systems/RenderSystem.h"
 
@@ -91,6 +93,7 @@ void Game::LoadLevel(int level) {
     registry_->AddSystem<MovementSystem>();
     registry_->AddSystem<RenderSystem>();
     registry_->AddSystem<AnimationSystem>();
+    registry_->AddSystem<CollisionSystem>();
 
     // Add assets to asset manager
     asset_manager_->AddTexture(renderer_, "tank-image", "./assets/images/tank-panther-right.png");
@@ -149,15 +152,17 @@ void Game::LoadLevel(int level) {
 
     // Create an entity for the tank
     auto tank = registry_->CreateEntity();
-    tank.AddComponent<TransformComponent>(glm::vec2(30, 30), glm::vec2(3, 3), 45.0);
-    tank.AddComponent<RigidBodyComponent>(glm::vec2(10, 0));
+    tank.AddComponent<TransformComponent>(glm::vec2(500, 10), glm::vec2(3, 3), 180);
+    tank.AddComponent<RigidBodyComponent>(glm::vec2(-50, 0));
     tank.AddComponent<SpriteComponent>("tank-image", 32, 32, 1);
+    tank.AddComponent<BoxColliderComponent>(32, 32);
 
     // Create an entity for the truck
     auto truck = registry_->CreateEntity();
-    truck.AddComponent<TransformComponent>(glm::vec2(60, 100), glm::vec2(1, 1), 0.0);
-    truck.AddComponent<RigidBodyComponent>(glm::vec2(0, 50));
-    truck.AddComponent<SpriteComponent>("truck-image", 10, 50, 1);
+    truck.AddComponent<TransformComponent>(glm::vec2(10, 10), glm::vec2(3, 3), 0.0);
+    truck.AddComponent<RigidBodyComponent>(glm::vec2(50, 0));
+    truck.AddComponent<SpriteComponent>("truck-image", 32, 32, 1);
+    truck.AddComponent<BoxColliderComponent>(32, 32);
 }
 
 void Game::Setup() {
@@ -198,6 +203,7 @@ void Game::Update() {
 
     registry_->GetSystem<MovementSystem>().Update(deltaTime);
     registry_->GetSystem<AnimationSystem>().Update();
+    registry_->GetSystem<CollisionSystem>().Update();
     registry_->Update();
 }
 
