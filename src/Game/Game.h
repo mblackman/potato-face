@@ -19,6 +19,9 @@ class Game {
     void Destroy();
     void Run();
 
+    int windowWidth;
+    int windowHeight;
+
    private:
     void ProcessInput();
     void Update();

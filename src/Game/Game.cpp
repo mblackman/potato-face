@@ -11,11 +11,13 @@
 #include <string>
 #include <vector>
 
+#include "../Components/AnimationComponent.h"
 #include "../Components/RigidBodyComponent.h"
 #include "../Components/SpriteComponent.h"
 #include "../Components/TransformComponent.h"
 #include "../ECS/ECS.h"
 #include "../General/Logger.h"
+#include "../Systems/AnimationSystem.h"
 #include "../Systems/MovementSystem.h"
 #include "../Systems/RenderSystem.h"
 
@@ -23,9 +25,9 @@ Game::Game() : window_(nullptr),
                renderer_(nullptr),
                is_running_(false),
                milliseconds_previous_frame_() {
-    Logger::Info("Game Constructor called.");
     registry_ = std::make_unique<Registry>();
     asset_manager_ = std::make_unique<AssetManager>();
+    Logger::Info("Game Constructor called.");
 }
 
 Game::~Game() {
@@ -40,13 +42,18 @@ void Game::Initialize() {
         return;
     }
 
+    SDL_DisplayMode displayMode;
+    SDL_GetCurrentDisplayMode(0, &displayMode);
+    windowWidth = displayMode.w;
+    windowHeight = displayMode.h;
+
     window_ = SDL_CreateWindow(
         "Potato Face",
         SDL_WINDOWPOS_CENTERED,
         SDL_WINDOWPOS_CENTERED,
-        800,
-        600,
-        SDL_WINDOW_SHOWN | SDL_WINDOW_FULLSCREEN);
+        windowWidth,
+        windowHeight,
+        SDL_WINDOW_SHOWN | SDL_WINDOW_FULLSCREEN | SDL_WINDOW_BORDERLESS);
 
     if (!window_) {
         Logger::Error("SDL_CreateWindow Error: " + std::string(SDL_GetError()));
@@ -83,10 +90,13 @@ void Game::LoadLevel(int level) {
     // Add systems
     registry_->AddSystem<MovementSystem>();
     registry_->AddSystem<RenderSystem>();
+    registry_->AddSystem<AnimationSystem>();
 
     // Add assets to asset manager
     asset_manager_->AddTexture(renderer_, "tank-image", "./assets/images/tank-panther-right.png");
     asset_manager_->AddTexture(renderer_, "truck-image", "./assets/images/truck-ford-right.png");
+    asset_manager_->AddTexture(renderer_, "chopper-image", "./assets/images/chopper.png");
+    asset_manager_->AddTexture(renderer_, "radar-image", "./assets/images/radar.png");
 
     // Load Tilemap
     asset_manager_->AddTexture(renderer_, "jungle-tile-map", "./assets/tilemaps/jungle.png");
@@ -98,7 +108,7 @@ void Game::LoadLevel(int level) {
     int columnNumber = 0;
     int tileWidth = 32;
     int tileHeight = 32;
-    double tileMapScale = 1.0;
+    double tileMapScale = 2.0;
 
     while (std::getline(file, line)) {
         std::stringstream ss(line);
@@ -124,15 +134,28 @@ void Game::LoadLevel(int level) {
         rowNumber++;
     }
 
+    // Chopper
+    auto chopper = registry_->CreateEntity();
+    chopper.AddComponent<TransformComponent>(glm::vec2(10, 30), glm::vec2(1, 1), 45.0);
+    chopper.AddComponent<RigidBodyComponent>(glm::vec2(0, 0));
+    chopper.AddComponent<SpriteComponent>("chopper-image", 32, 32, 1);
+    chopper.AddComponent<AnimationComponent>(2, 15, true);
+
+    // Radar
+    auto radar = registry_->CreateEntity();
+    radar.AddComponent<TransformComponent>(glm::vec2(windowWidth - 74, 10), glm::vec2(1, 1), 45.0);
+    radar.AddComponent<SpriteComponent>("radar-image", 64, 64, 2);
+    radar.AddComponent<AnimationComponent>(8, 5, true);
+
     // Create an entity for the tank
     auto tank = registry_->CreateEntity();
-    tank.AddComponent<TransformComponent>(glm::vec2(10, 30), glm::vec2(3, 3), 45.0);
+    tank.AddComponent<TransformComponent>(glm::vec2(30, 30), glm::vec2(3, 3), 45.0);
     tank.AddComponent<RigidBodyComponent>(glm::vec2(10, 0));
     tank.AddComponent<SpriteComponent>("tank-image", 32, 32, 1);
 
     // Create an entity for the truck
     auto truck = registry_->CreateEntity();
-    truck.AddComponent<TransformComponent>(glm::vec2(50, 100), glm::vec2(1, 1), 0.0);
+    truck.AddComponent<TransformComponent>(glm::vec2(60, 100), glm::vec2(1, 1), 0.0);
     truck.AddComponent<RigidBodyComponent>(glm::vec2(0, 50));
     truck.AddComponent<SpriteComponent>("truck-image", 10, 50, 1);
 }
@@ -174,7 +197,7 @@ void Game::Update() {
     milliseconds_previous_frame_ = SDL_GetTicks();
 
     registry_->GetSystem<MovementSystem>().Update(deltaTime);
-
+    registry_->GetSystem<AnimationSystem>().Update();
     registry_->Update();
 }
 
