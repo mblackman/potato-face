@@ -20,6 +20,7 @@
 #include "../General/Logger.h"
 #include "../Systems/AnimationSystem.h"
 #include "../Systems/CollisionSystem.h"
+#include "../Systems/DrawColliderSystem.h"
 #include "../Systems/MovementSystem.h"
 #include "../Systems/RenderSystem.h"
 
@@ -94,6 +95,7 @@ void Game::LoadLevel(int level) {
     registry_->AddSystem<RenderSystem>();
     registry_->AddSystem<AnimationSystem>();
     registry_->AddSystem<CollisionSystem>();
+    registry_->AddSystem<DrawColliderSystem>();
 
     // Add assets to asset manager
     asset_manager_->AddTexture(renderer_, "tank-image", "./assets/images/tank-panther-right.png");
@@ -213,6 +215,7 @@ void Game::Render() {
 
     // TODO: Render with ECS
     registry_->GetSystem<RenderSystem>().Update(renderer_, asset_manager_);
+    registry_->GetSystem<DrawColliderSystem>().Update(renderer_);
 
     SDL_RenderPresent(renderer_);
 }
