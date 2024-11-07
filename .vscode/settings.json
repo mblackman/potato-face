@@ -1,6 +1,7 @@
 {
     "C_Cpp.errorSquiggles": "disabled",
     "cSpell.words": [
+        "Blam",
         "endregion"
     ],
     "editor.formatOnSave": true,
@@ -75,7 +76,10 @@
         "thread": "cpp",
         "cinttypes": "cpp",
         "typeinfo": "cpp",
-        "variant": "cpp"
+        "variant": "cpp",
+        "format": "cpp"
     },
-    "Workspace_Formatter.includePattern": ["src/**/*.{cpp,h}"]
+    "Workspace_Formatter.includePattern": [
+        "src/**/*.{cpp,h}"
+    ]
 }

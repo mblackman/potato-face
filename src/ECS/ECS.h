@@ -1,6 +1,7 @@
 #pragma once
 
 #include <bitset>
+#include <deque>
 #include <memory>
 #include <set>
 #include <stdexcept>
@@ -39,9 +40,7 @@ class Entity {
    public:
     Entity(int id, Registry* registry) : id_(id), registry_(registry) {}
 
-    int GetId() const {
-        return id_;
-    }
+    int GetId() const;
 
     bool operator==(const Entity& other) const {
         return id_ == other.id_;
@@ -78,6 +77,8 @@ class Entity {
 
     template <typename T>
     T& GetComponent() const;
+
+    void Blam();
 };
 
 class System {
@@ -126,6 +127,9 @@ class Registry {
     // A map of the systems that are registered with the registry.
     std::unordered_map<std::type_index, std::shared_ptr<System>> systems_;
 
+    // A queue of ids that have been freed from destroyed entities.
+    std::deque<int> free_ids_;
+
    public:
     Registry() = default;
     ~Registry() = default;
@@ -134,7 +138,8 @@ class Registry {
 
     // Entity management
     Entity CreateEntity();
-    void DestroyEntity(const Entity entity);
+
+    void BlamEntity(const Entity entity);
 
     // System management
     template <typename T, typename... TArgs>
@@ -150,6 +155,8 @@ class Registry {
     T& GetSystem() const;
 
     void AddEntityToSystems(const Entity entity);
+
+    void RemoveEntityFromSystems(const Entity entity);
 
     // Component management
     template <typename T, typename... TArgs>
