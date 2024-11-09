@@ -30,6 +30,7 @@ Game::Game() : window_(nullptr),
                milliseconds_previous_frame_() {
     registry_ = std::make_unique<Registry>();
     asset_manager_ = std::make_unique<AssetManager>();
+    event_bus_ = std::make_unique<EventBus>();
     Logger::Info("Game Constructor called.");
 }
 

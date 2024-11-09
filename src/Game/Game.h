@@ -6,6 +6,7 @@
 
 #include "../AssetManager/AssetManager.h"
 #include "../ECS/ECS.h"
+#include "../EventBus/EventBus.h"
 
 const int kFps = 60;
 const int kMillisecondsPerFrame = 1000 / kFps;
@@ -35,4 +36,5 @@ class Game {
     int milliseconds_previous_frame_ = 0;
     std::unique_ptr<Registry> registry_;
     std::unique_ptr<AssetManager> asset_manager_;
+    std::unique_ptr<EventBus> event_bus_;
 };
