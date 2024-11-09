@@ -27,14 +27,14 @@ class EventCallback : public IEventCallback {
 
     TOwner* owner_instance_;
     CallbackFunction callback_function_;
-    virtual void Call(Event& e) override {
+    virtual void CallEvent(Event& e) override {
         std::invoke(callback_function_, owner_instance_, static_cast<TEvent&>(e));
     }
 
    public:
     EventCallback(TOwner* ownerInstance, CallbackFunction callbackFunction) {
         this->owner_instance_ = ownerInstance;
-        this->callback_function = callbackFunction;
+        this->callback_function_ = callbackFunction;
     }
 
     virtual ~EventCallback() override = default;
@@ -55,12 +55,16 @@ class EventBus {
         Logger::Info("Event bus destructed");
     }
 
+    void Reset() {
+        subscribers_.clear();
+    }
+
     template <typename TOwner, typename TEvent>
     void SubscribeEvent(TOwner* ownerInstance, void (TOwner::*callbackFunction)(TEvent&)) {
         if (!subscribers_[typeid(TEvent)].get()) {
             subscribers_[typeid(TEvent)] = std::make_unique<HandlerList>();
         }
-        auto subscriber = std::make_unique<TOwner, TEvent>(ownerInstance, callbackFunction);
+        auto subscriber = std::make_unique<EventCallback<TOwner, TEvent>>(ownerInstance, callbackFunction);
         subscribers_[typeid(TEvent)]->push_back(std::move(subscriber));
     }
 
@@ -70,7 +74,7 @@ class EventBus {
 
         if (handlers) {
             for (auto it = handlers->begin(); it != handlers->end(); it++) {
-                auto handler = *it;
+                auto handler = it->get();
                 TEvent event(std::forward<TArgs>(args)...);
                 handler->Execute(event);
             }

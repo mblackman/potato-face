@@ -20,6 +20,7 @@
 #include "../General/Logger.h"
 #include "../Systems/AnimationSystem.h"
 #include "../Systems/CollisionSystem.h"
+#include "../Systems/DamageSystem.h"
 #include "../Systems/DrawColliderSystem.h"
 #include "../Systems/MovementSystem.h"
 #include "../Systems/RenderSystem.h"
@@ -97,6 +98,7 @@ void Game::LoadLevel(int level) {
     registry_->AddSystem<AnimationSystem>();
     registry_->AddSystem<CollisionSystem>();
     registry_->AddSystem<DrawColliderSystem>();
+    registry_->AddSystem<DamageSystem>();
 
     // Add assets to asset manager
     asset_manager_->AddTexture(renderer_, "tank-image", "./assets/images/tank-panther-right.png");
@@ -200,13 +202,18 @@ void Game::Update() {
         SDL_Delay(timeToWait);
     }
 
+    // Subscribe to events
+    event_bus_->Reset();
+    registry_->GetSystem<DamageSystem>().SubscribeToEvents(event_bus_);
+
     double deltaTime = (SDL_GetTicks() - milliseconds_previous_frame_) / 1000.0;
 
     milliseconds_previous_frame_ = SDL_GetTicks();
 
     registry_->GetSystem<MovementSystem>().Update(deltaTime);
     registry_->GetSystem<AnimationSystem>().Update();
-    registry_->GetSystem<CollisionSystem>().Update();
+    registry_->GetSystem<CollisionSystem>().Update(event_bus_);
+    registry_->GetSystem<DamageSystem>().Update();
     registry_->Update();
 }
 

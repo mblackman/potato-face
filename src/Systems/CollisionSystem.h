@@ -3,6 +3,8 @@
 #include "../Components/BoxColliderComponent.h"
 #include "../Components/TransformComponent.h"
 #include "../ECS/ECS.h"
+#include "../EventBus/EventBus.h"
+#include "../Events/CollisionEvent.h"
 #include "../General/Logger.h"
 
 class CollisionSystem : public System {
@@ -14,7 +16,7 @@ class CollisionSystem : public System {
 
     ~CollisionSystem() = default;
 
-    void Update() {
+    void Update(std::unique_ptr<EventBus>& eventBus) {
         auto entities = GetEntities();
 
         for (auto i = entities.begin(); i != entities.end(); i++) {
@@ -29,6 +31,7 @@ class CollisionSystem : public System {
                 bool isColliding = CheckAABBCollision(transformA, colliderA, transformB, colliderB);
                 if (isColliding) {
                     Logger::Info("Entities colliding");
+                    eventBus->EmitEvent<CollisionEvent>(entityA, entityB);
                 }
             }
         }
