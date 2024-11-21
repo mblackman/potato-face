@@ -1,20 +1,18 @@
 #pragma once
 
-#include <string>
+#include <SDL2/SDL_keycode.h>
 
-#include "../Enums/InputKey.h"
-#include "../Enums/InputModifier.h"
+#include <string>
 
 struct KeyInputEvent : public Event {
    public:
-    InputKey inputKey;
-    InputModifier inputModifier;
+    SDL_Keycode inputKey;
+    SDL_Keymod inputModifier;
     bool isPressed;
     std::string inputString;
 
-    KeyInputEvent(InputKey inputKey, InputModifier inputModifier, bool isPressed, std::string inputString)
+    KeyInputEvent(SDL_Keycode inputKey, SDL_Keymod inputModifier, bool isPressed)
         : inputKey(inputKey),
           inputModifier(inputModifier),
-          isPressed(isPressed),
-          inputString(inputString) {}
+          isPressed(isPressed) {}
 };

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <SDL2/SDL_keycode.h>
+
 #include <glm/glm.hpp>
 
 #include "../Components/KeyboardControlComponent.h"
@@ -36,19 +38,19 @@ class KeyboardControlSystem : public System {
             auto& rigidBodyComponent = entity.GetComponent<RigidBodyComponent>();
 
             switch (event.inputKey) {
-                case InputKey::Key_Up:
+                case SDLK_UP:
                     rigidBodyComponent.velocity = glm::vec2(0, -keyboardComponent.velocity);
                     spriteComponent.srcRect.y = spriteComponent.height * 0;
                     break;
-                case InputKey::Key_Down:
+                case SDLK_DOWN:
                     rigidBodyComponent.velocity = glm::vec2(0, keyboardComponent.velocity);
                     spriteComponent.srcRect.y = spriteComponent.height * 1;
                     break;
-                case InputKey::Key_Left:
+                case SDLK_LEFT:
                     rigidBodyComponent.velocity = glm::vec2(-keyboardComponent.velocity, 0);
                     spriteComponent.srcRect.y = spriteComponent.height * 2;
                     break;
-                case InputKey::Key_Right:
+                case SDLK_RIGHT:
                     rigidBodyComponent.velocity = glm::vec2(keyboardComponent.velocity, 0);
                     spriteComponent.srcRect.y = spriteComponent.height * 3;
                     break;

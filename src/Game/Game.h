@@ -6,8 +6,6 @@
 
 #include "../AssetManager/AssetManager.h"
 #include "../ECS/ECS.h"
-#include "../Enums/InputKey.h"
-#include "../Enums/InputModifier.h"
 #include "../EventBus/EventBus.h"
 #include "../Events/KeyInputEvent.h"
 
@@ -35,8 +33,6 @@ class Game {
     void SubscribeToEvents(std::unique_ptr<EventBus>& eventBus);
     void OnKeyInputEvent(KeyInputEvent& event);
     KeyInputEvent GetKeyInputEvent(SDL_KeyboardEvent* event);
-    InputKey GetInputKey(SDL_Keycode sdlKeyCode);
-    InputModifier GetModifierKey(Uint16 mod);
 
     SDL_Window* window_;
     SDL_Renderer* renderer_;
