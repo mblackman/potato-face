@@ -13,6 +13,7 @@
 
 #include "../Components/AnimationComponent.h"
 #include "../Components/BoxColliderComponent.h"
+#include "../Components/KeyboardControlComponent.h"
 #include "../Components/RigidBodyComponent.h"
 #include "../Components/SpriteComponent.h"
 #include "../Components/TransformComponent.h"
@@ -23,6 +24,7 @@
 #include "../Systems/CollisionSystem.h"
 #include "../Systems/DamageSystem.h"
 #include "../Systems/DrawColliderSystem.h"
+#include "../Systems/KeyboardControlSystem.h"
 #include "../Systems/MovementSystem.h"
 #include "../Systems/RenderSystem.h"
 
@@ -101,11 +103,12 @@ void Game::LoadLevel(int level) {
     registry_->AddSystem<CollisionSystem>();
     registry_->AddSystem<DrawColliderSystem>();
     registry_->AddSystem<DamageSystem>();
+    registry_->AddSystem<KeyboardControlSystem>();
 
     // Add assets to asset manager
     asset_manager_->AddTexture(renderer_, "tank-image", "./assets/images/tank-panther-right.png");
     asset_manager_->AddTexture(renderer_, "truck-image", "./assets/images/truck-ford-right.png");
-    asset_manager_->AddTexture(renderer_, "chopper-image", "./assets/images/chopper.png");
+    asset_manager_->AddTexture(renderer_, "chopper-image", "./assets/images/chopper-spritesheet.png");
     asset_manager_->AddTexture(renderer_, "radar-image", "./assets/images/radar.png");
 
     // Load Tilemap
@@ -150,8 +153,9 @@ void Game::LoadLevel(int level) {
     chopper.AddComponent<RigidBodyComponent>(glm::vec2(0, 0));
     chopper.AddComponent<SpriteComponent>("chopper-image", 32, 32, 1);
     chopper.AddComponent<AnimationComponent>(2, 15, true);
+    chopper.AddComponent<KeyboardControlComponent>(20.0);
 
-    // Radar
+    //  Radar
     auto radar = registry_->CreateEntity();
     radar.AddComponent<TransformComponent>(glm::vec2(windowWidth - 74, 10), glm::vec2(1, 1), 45.0);
     radar.AddComponent<SpriteComponent>("radar-image", 64, 64, 2);
@@ -207,7 +211,7 @@ void Game::Update() {
     // Subscribe to events
     event_bus_->Reset();
     registry_->GetSystem<DamageSystem>().SubscribeToEvents(event_bus_);
-    registry_->GetSystem<MovementSystem>().SubscribeToEvents(event_bus_);
+    registry_->GetSystem<KeyboardControlSystem>().SubscribeToEvents(event_bus_);
     SubscribeToEvents(event_bus_);
 
     // Calculate delta time
@@ -219,6 +223,7 @@ void Game::Update() {
     registry_->GetSystem<AnimationSystem>().Update();
     registry_->GetSystem<CollisionSystem>().Update(event_bus_);
     registry_->GetSystem<DamageSystem>().Update();
+    registry_->GetSystem<KeyboardControlSystem>().Update();
     registry_->Update();
 }
 
