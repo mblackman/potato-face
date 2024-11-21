@@ -44,15 +44,15 @@ class KeyboardControlSystem : public System {
                     break;
                 case SDLK_DOWN:
                     rigidBodyComponent.velocity = glm::vec2(0, keyboardComponent.velocity);
-                    spriteComponent.srcRect.y = spriteComponent.height * 1;
+                    spriteComponent.srcRect.y = spriteComponent.height * 2;
                     break;
                 case SDLK_LEFT:
                     rigidBodyComponent.velocity = glm::vec2(-keyboardComponent.velocity, 0);
-                    spriteComponent.srcRect.y = spriteComponent.height * 2;
+                    spriteComponent.srcRect.y = spriteComponent.height * 3;
                     break;
                 case SDLK_RIGHT:
                     rigidBodyComponent.velocity = glm::vec2(keyboardComponent.velocity, 0);
-                    spriteComponent.srcRect.y = spriteComponent.height * 3;
+                    spriteComponent.srcRect.y = spriteComponent.height * 1;
                     break;
             }
         }
