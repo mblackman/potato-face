@@ -13,6 +13,7 @@
 
 #include "../Components/AnimationComponent.h"
 #include "../Components/BoxColliderComponent.h"
+#include "../Components/CameraFollowComponent.h"
 #include "../Components/KeyboardControlComponent.h"
 #include "../Components/RigidBodyComponent.h"
 #include "../Components/SpriteComponent.h"
@@ -21,6 +22,7 @@
 #include "../Events/KeyInputEvent.h"
 #include "../General/Logger.h"
 #include "../Systems/AnimationSystem.h"
+#include "../Systems/CameraFollowSystem.h"
 #include "../Systems/CollisionSystem.h"
 #include "../Systems/DamageSystem.h"
 #include "../Systems/DrawColliderSystem.h"
@@ -28,8 +30,14 @@
 #include "../Systems/MovementSystem.h"
 #include "../Systems/RenderSystem.h"
 
+int Game::windowWidth;
+int Game::windowHeight;
+int Game::mapWidth;
+int Game::mapHeight;
+
 Game::Game() : window_(nullptr),
                renderer_(nullptr),
+               camera_(),
                is_running_(false),
                show_colliders_(false),
                milliseconds_previous_frame_() {
@@ -76,6 +84,13 @@ void Game::Initialize() {
         return;
     }
 
+    camera_.x = 0;
+    camera_.y = 0;
+    camera_.w = windowWidth;
+    camera_.h = windowHeight;
+
+    SDL_SetRenderDrawColor(renderer_, 21, 21, 21, 255);
+
     is_running_ = true;
 }
 
@@ -104,6 +119,7 @@ void Game::LoadLevel(int level) {
     registry_->AddSystem<DrawColliderSystem>();
     registry_->AddSystem<DamageSystem>();
     registry_->AddSystem<KeyboardControlSystem>();
+    registry_->AddSystem<CameraFollowSystem>();
 
     // Add assets to asset manager
     asset_manager_->AddTexture(renderer_, "tank-image", "./assets/images/tank-panther-right.png");
@@ -121,7 +137,7 @@ void Game::LoadLevel(int level) {
     int columnNumber = 0;
     int tileWidth = 32;
     int tileHeight = 32;
-    double tileMapScale = 2.0;
+    double tileMapScale = 4.0;
 
     while (std::getline(file, line)) {
         std::stringstream ss(line);
@@ -146,14 +162,20 @@ void Game::LoadLevel(int level) {
 
         rowNumber++;
     }
+    file.close();
 
+    mapWidth = columnNumber * tileWidth * tileMapScale;
+    mapHeight = rowNumber * tileHeight * tileMapScale;
+
+    // Create entities
     // Chopper
     auto chopper = registry_->CreateEntity();
-    chopper.AddComponent<TransformComponent>(glm::vec2(10, 30), glm::vec2(1, 1), 45.0);
+    chopper.AddComponent<TransformComponent>(glm::vec2(10, 30), glm::vec2(3, 3), 0);
     chopper.AddComponent<RigidBodyComponent>(glm::vec2(0, 0));
     chopper.AddComponent<SpriteComponent>("chopper-image", 32, 32, 1);
     chopper.AddComponent<AnimationComponent>(2, 15, true);
-    chopper.AddComponent<KeyboardControlComponent>(20.0);
+    chopper.AddComponent<KeyboardControlComponent>(250.0);
+    chopper.AddComponent<CameraFollowComponent>();
 
     //  Radar
     auto radar = registry_->CreateEntity();
@@ -224,6 +246,7 @@ void Game::Update() {
     registry_->GetSystem<CollisionSystem>().Update(event_bus_);
     registry_->GetSystem<DamageSystem>().Update();
     registry_->GetSystem<KeyboardControlSystem>().Update();
+    registry_->GetSystem<CameraFollowSystem>().Update(camera_);
     registry_->Update();
 }
 
@@ -232,7 +255,7 @@ void Game::Render() {
     SDL_RenderClear(renderer_);
 
     // TODO: Render with ECS
-    registry_->GetSystem<RenderSystem>().Update(renderer_, asset_manager_);
+    registry_->GetSystem<RenderSystem>().Update(renderer_, asset_manager_, camera_);
 
     if (show_colliders_) {
         registry_->GetSystem<DrawColliderSystem>().Update(renderer_);

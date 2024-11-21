@@ -21,8 +21,10 @@ class Game {
     void Destroy();
     void Run();
 
-    int windowWidth;
-    int windowHeight;
+    static int windowWidth;
+    static int windowHeight;
+    static int mapWidth;
+    static int mapHeight;
 
    private:
     void ProcessInput();
@@ -36,6 +38,7 @@ class Game {
 
     SDL_Window* window_;
     SDL_Renderer* renderer_;
+    SDL_Rect camera_;
     bool is_running_;
     bool show_colliders_;
     int milliseconds_previous_frame_ = 0;
