@@ -34,10 +34,12 @@ class RenderSystem : public System {
             const auto sprite = entity.GetComponent<SpriteComponent>();
 
             const auto texture = assetManager->GetTexture(sprite.assetId);
+            float x = sprite.isFixed ? transform.position.x : transform.position.x - camera.x;
+            float y = sprite.isFixed ? transform.position.y : transform.position.y - camera.y;
 
             SDL_Rect destRect = {
-                static_cast<int>(transform.position.x - camera.x),
-                static_cast<int>(transform.position.y - camera.y),
+                static_cast<int>(x),
+                static_cast<int>(y),
                 static_cast<int>(sprite.width * transform.scale.x),
                 static_cast<int>(sprite.height * transform.scale.y)};
 

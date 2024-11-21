@@ -156,7 +156,7 @@ void Game::LoadLevel(int level) {
 
             auto tile = registry_->CreateEntity();
             tile.AddComponent<TransformComponent>(glm::vec2(tileWidth * columnNumber * tileMapScale, tileHeight * rowNumber * tileMapScale), glm::vec2(tileMapScale, tileMapScale), 0.0);
-            tile.AddComponent<SpriteComponent>("jungle-tile-map", tileWidth, tileHeight, 0, tileWidth * columnIndex, tileHeight * rowIndex);
+            tile.AddComponent<SpriteComponent>("jungle-tile-map", tileWidth, tileHeight, 0, false, tileWidth * columnIndex, tileHeight * rowIndex);
             columnNumber++;
         }
 
@@ -180,7 +180,7 @@ void Game::LoadLevel(int level) {
     //  Radar
     auto radar = registry_->CreateEntity();
     radar.AddComponent<TransformComponent>(glm::vec2(windowWidth - 74, 10), glm::vec2(1, 1), 45.0);
-    radar.AddComponent<SpriteComponent>("radar-image", 64, 64, 2);
+    radar.AddComponent<SpriteComponent>("radar-image", 64, 64, 2, true);
     radar.AddComponent<AnimationComponent>(8, 5, true);
 
     // Create an entity for the tank
