@@ -16,14 +16,14 @@ class DrawColliderSystem : public System {
 
     ~DrawColliderSystem() = default;
 
-    void Update(SDL_Renderer* renderer) {
+    void Update(SDL_Renderer* renderer, SDL_Rect& camera) {
         for (auto entity : GetEntities()) {
             const auto& transform = entity.GetComponent<TransformComponent>();
             const auto& collider = entity.GetComponent<BoxColliderComponent>();
 
             const SDL_FRect rect = {
-                transform.position.x,
-                transform.position.y,
+                transform.position.x - camera.x,
+                transform.position.y - camera.y,
                 collider.width * transform.scale.x,
                 collider.height * transform.scale.y};
 

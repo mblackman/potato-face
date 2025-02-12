@@ -17,7 +17,9 @@ class DamageSystem : public System {
     }
 
     void OnCollision(CollisionEvent& event) {
-        Logger::Info("Damage System received an event.");
+        auto aId = std::to_string(event.entityA.GetId());
+        auto bId = std::to_string(event.entityB.GetId());
+        Logger::Info("Damage collision received between: " + aId + " and " + bId + ".");
     }
 
     void Update() {

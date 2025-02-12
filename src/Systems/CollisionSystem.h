@@ -30,7 +30,6 @@ class CollisionSystem : public System {
                 const auto& colliderB = entityB.GetComponent<BoxColliderComponent>();
                 bool isColliding = CheckAABBCollision(transformA, colliderA, transformB, colliderB);
                 if (isColliding) {
-                    Logger::Info("Entities colliding");
                     eventBus->EmitEvent<CollisionEvent>(entityA, entityB);
                 }
             }

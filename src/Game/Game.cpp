@@ -14,7 +14,9 @@
 #include "../Components/AnimationComponent.h"
 #include "../Components/BoxColliderComponent.h"
 #include "../Components/CameraFollowComponent.h"
+#include "../Components/HealthComponent.h"
 #include "../Components/KeyboardControlComponent.h"
+#include "../Components/ProjectileEmitterComponent.h"
 #include "../Components/RigidBodyComponent.h"
 #include "../Components/SpriteComponent.h"
 #include "../Components/TransformComponent.h"
@@ -28,6 +30,8 @@
 #include "../Systems/DrawColliderSystem.h"
 #include "../Systems/KeyboardControlSystem.h"
 #include "../Systems/MovementSystem.h"
+#include "../Systems/ProjectileEmitSystem.h"
+#include "../Systems/ProjectileLifecycleSystem.h"
 #include "../Systems/RenderSystem.h"
 
 int Game::windowWidth;
@@ -120,12 +124,15 @@ void Game::LoadLevel(int level) {
     registry_->AddSystem<DamageSystem>();
     registry_->AddSystem<KeyboardControlSystem>();
     registry_->AddSystem<CameraFollowSystem>();
+    registry_->AddSystem<ProjectileEmitSystem>();
+    registry_->AddSystem<ProjectileLifecycleSystem>();
 
     // Add assets to asset manager
     asset_manager_->AddTexture(renderer_, "tank-image", "./assets/images/tank-panther-right.png");
     asset_manager_->AddTexture(renderer_, "truck-image", "./assets/images/truck-ford-right.png");
     asset_manager_->AddTexture(renderer_, "chopper-image", "./assets/images/chopper-spritesheet.png");
     asset_manager_->AddTexture(renderer_, "radar-image", "./assets/images/radar.png");
+    asset_manager_->AddTexture(renderer_, "bullet-image", "./assets/images/bullet.png");
 
     // Load Tilemap
     asset_manager_->AddTexture(renderer_, "jungle-tile-map", "./assets/tilemaps/jungle.png");
@@ -176,6 +183,8 @@ void Game::LoadLevel(int level) {
     chopper.AddComponent<AnimationComponent>(2, 15, true);
     chopper.AddComponent<KeyboardControlComponent>(250.0);
     chopper.AddComponent<CameraFollowComponent>();
+    chopper.AddComponent<ProjectileEmitterComponent>(glm::vec2(150, 150), 5000, 0, 10, true);
+    chopper.AddComponent<HealthComponent>(100);
 
     //  Radar
     auto radar = registry_->CreateEntity();
@@ -189,6 +198,8 @@ void Game::LoadLevel(int level) {
     tank.AddComponent<RigidBodyComponent>(glm::vec2(-50, 0));
     tank.AddComponent<SpriteComponent>("tank-image", 32, 32, 1);
     tank.AddComponent<BoxColliderComponent>(32, 32);
+    tank.AddComponent<ProjectileEmitterComponent>(glm::vec2(-100, 0), 10000, 5000, 10, false);
+    tank.AddComponent<HealthComponent>(100);
 
     // Create an entity for the truck
     auto truck = registry_->CreateEntity();
@@ -196,6 +207,8 @@ void Game::LoadLevel(int level) {
     truck.AddComponent<RigidBodyComponent>(glm::vec2(50, 0));
     truck.AddComponent<SpriteComponent>("truck-image", 32, 32, 1);
     truck.AddComponent<BoxColliderComponent>(32, 32);
+    truck.AddComponent<ProjectileEmitterComponent>(glm::vec2(100, 0), 10000, 2000, 10, false);
+    truck.AddComponent<HealthComponent>(100);
 }
 
 void Game::Setup() {
@@ -234,6 +247,7 @@ void Game::Update() {
     event_bus_->Reset();
     registry_->GetSystem<DamageSystem>().SubscribeToEvents(event_bus_);
     registry_->GetSystem<KeyboardControlSystem>().SubscribeToEvents(event_bus_);
+    registry_->GetSystem<ProjectileEmitSystem>().SubscribeToEvents(event_bus_);
     SubscribeToEvents(event_bus_);
 
     // Calculate delta time
@@ -247,6 +261,8 @@ void Game::Update() {
     registry_->GetSystem<DamageSystem>().Update();
     registry_->GetSystem<KeyboardControlSystem>().Update();
     registry_->GetSystem<CameraFollowSystem>().Update(camera_);
+    registry_->GetSystem<ProjectileEmitSystem>().Update(registry_);
+    registry_->GetSystem<ProjectileLifecycleSystem>().Update();
     registry_->Update();
 }
 
@@ -258,7 +274,7 @@ void Game::Render() {
     registry_->GetSystem<RenderSystem>().Update(renderer_, asset_manager_, camera_);
 
     if (show_colliders_) {
-        registry_->GetSystem<DrawColliderSystem>().Update(renderer_);
+        registry_->GetSystem<DrawColliderSystem>().Update(renderer_, camera_);
     }
 
     SDL_RenderPresent(renderer_);
