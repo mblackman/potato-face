@@ -4,6 +4,7 @@
 #include <deque>
 #include <iostream>
 #include <memory>
+#include <stdexcept>
 #include <vector>
 
 #include "../General/Logger.h"
@@ -123,6 +124,14 @@ void Registry::Update() {
 }
 
 void Registry::TagEntity(Entity entity, const std::string& tag) {
+    auto existingTag = entity_by_tag_.find(tag);
+    if (existingTag != entity_by_tag_.end()) {
+        if (existingTag->second != entity) {
+            throw std::runtime_error("Entity with tag: " + tag + " already exists.");
+        }
+        return;
+    }
+
     entity_by_tag_.emplace(tag, entity);
     tag_by_entity_.emplace(entity.GetId(), tag);
 }
@@ -164,8 +173,13 @@ bool Registry::EntityInGroup(Entity entity, const std::string& group) const {
 }
 
 std::vector<Entity> Registry::GetEntitiesByGroup(const std::string& group) const {
-    auto& entities = entities_by_groups_.at(group);
-    return std::vector(entities.begin(), entities.end());
+    auto entities = entities_by_groups_.find(group);
+
+    if (entities == entities_by_groups_.end()) {
+        return std::vector<Entity>();
+    }
+
+    return std::vector(entities->second.begin(), entities->second.end());
 }
 
 void Registry::RemoveEntityGroup(Entity entity, const std::string& group) {
@@ -175,6 +189,8 @@ void Registry::RemoveEntityGroup(Entity entity, const std::string& group) {
         if (groups->second.empty()) {
             groups_by_entity_.erase(entity.GetId());
         }
+    } else {
+        return;
     }
 
     auto entities = entities_by_groups_.find(group);
