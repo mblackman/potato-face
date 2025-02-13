@@ -15,6 +15,22 @@ int Entity::GetId() const {
     return id_;
 }
 
+void Entity::Tag(const std::string& tag) {
+    registry_->TagEntity(*this, tag);
+}
+
+bool Entity::HasTag(const std::string& tag) const {
+    return registry_->EntityHasTag(*this, tag);
+}
+
+void Entity::Group(const std::string& group) {
+    registry_->GroupEntity(*this, group);
+}
+
+bool Entity::InGroup(const std::string& group) const {
+    return registry_->EntityInGroup(*this, group);
+}
+
 void Entity::Blam() {
     registry_->BlamEntity(*this);
 }
@@ -35,7 +51,6 @@ void System::RemoveEntity(const Entity entity) {
 }
 
 // Registry implementation
-
 Entity Registry::CreateEntity() {
     std::size_t entityId;
 
@@ -98,8 +113,91 @@ void Registry::Update() {
         free_ids_.push_front(entity.GetId());
         entity_component_signatures_[entity.GetId()].reset();
 
+        RemoveEntityTag(entity);
+        RemoveEntityGroups(entity);
+
         Logger::Info("Entity destroyed: " + std::to_string(entity.GetId()));
     }
 
     entities_to_remove_.clear();
+}
+
+void Registry::TagEntity(Entity entity, const std::string& tag) {
+    entity_by_tag_.emplace(tag, entity);
+    tag_by_entity_.emplace(entity.GetId(), tag);
+}
+
+bool Registry::EntityHasTag(Entity entity, const std::string& tag) const {
+    if (entity_by_tag_.find(tag) == entity_by_tag_.end()) {
+        return false;
+    }
+
+    return (entity_by_tag_.at(tag) == entity);
+}
+
+Entity Registry::GetEntityByTag(const std::string& tag) const {
+    return entity_by_tag_.at(tag);
+}
+
+void Registry::RemoveEntityTag(Entity entity) {
+    const auto tag = tag_by_entity_.find(entity.GetId());
+    if (tag != tag_by_entity_.end()) {
+        entity_by_tag_.erase(tag->second);
+        tag_by_entity_.erase(entity.GetId());
+    }
+}
+
+void Registry::GroupEntity(Entity entity, const std::string& group) {
+    entities_by_groups_.emplace(group, std::set<Entity>());
+    entities_by_groups_.at(group).emplace(entity);
+    groups_by_entity_.emplace(entity.GetId(), std::set<std::string>());
+    groups_by_entity_.at(entity.GetId()).emplace(group);
+}
+
+bool Registry::EntityInGroup(Entity entity, const std::string& group) const {
+    auto groups = groups_by_entity_.find(entity.GetId());
+    if (groups == groups_by_entity_.end()) {
+        return false;
+    }
+
+    return groups->second.find(group) != groups->second.end();
+}
+
+std::vector<Entity> Registry::GetEntitiesByGroup(const std::string& group) const {
+    auto& entities = entities_by_groups_.at(group);
+    return std::vector(entities.begin(), entities.end());
+}
+
+void Registry::RemoveEntityGroup(Entity entity, const std::string& group) {
+    auto groups = groups_by_entity_.find(entity.GetId());
+    if (groups != groups_by_entity_.end()) {
+        groups->second.erase(group);
+        if (groups->second.empty()) {
+            groups_by_entity_.erase(entity.GetId());
+        }
+    }
+
+    auto entities = entities_by_groups_.find(group);
+    if (entities != entities_by_groups_.end()) {
+        entities->second.erase(entity);
+        if (entities->second.empty()) {
+            entities_by_groups_.erase(group);
+        }
+    }
+}
+
+void Registry::RemoveEntityGroups(Entity entity) {
+    auto groups = groups_by_entity_.find(entity.GetId());
+    if (groups != groups_by_entity_.end()) {
+        for (auto group : groups->second) {
+            auto entities = entities_by_groups_.find(group);
+            if (entities != entities_by_groups_.end()) {
+                entities->second.erase(entity);
+                if (entities->second.empty()) {
+                    entities_by_groups_.erase(group);
+                }
+            }
+        }
+        groups_by_entity_.erase(entity.GetId());
+    }
 }

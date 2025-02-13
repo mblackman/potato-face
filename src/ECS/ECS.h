@@ -78,6 +78,11 @@ class Entity {
     template <typename T>
     T& GetComponent() const;
 
+    void Tag(const std::string& tag);
+    bool HasTag(const std::string& tag) const;
+    void Group(const std::string& group);
+    bool InGroup(const std::string& group) const;
+
     void Blam();
 };
 
@@ -116,6 +121,14 @@ class Registry {
     std::set<Entity> entities_to_add_;
     std::set<Entity> entities_to_remove_;
 
+    // Keeps track of the tags for each entity in both directions.
+    std::unordered_map<std::string, Entity> entity_by_tag_;
+    std::unordered_map<int, std::string> tag_by_entity_;
+
+    // Keeps track of the groups for each entity in both directions.
+    std::unordered_map<std::string, std::set<Entity>> entities_by_groups_;
+    std::unordered_map<int, std::set<std::string>> groups_by_entity_;
+
     // Each pool at an index corresponds to a component type.
     // [Pool index = entity id]
     std::vector<std::shared_ptr<IPool>> component_pools_;
@@ -140,6 +153,19 @@ class Registry {
     Entity CreateEntity();
 
     void BlamEntity(const Entity entity);
+
+    // Tag management
+    void TagEntity(Entity entity, const std::string& tag);
+    bool EntityHasTag(Entity entity, const std::string& tag) const;
+    Entity GetEntityByTag(const std::string& tag) const;
+    void RemoveEntityTag(Entity entity);
+
+    // Group management
+    void GroupEntity(Entity entity, const std::string& group);
+    bool EntityInGroup(Entity entity, const std::string& group) const;
+    std::vector<Entity> GetEntitiesByGroup(const std::string& group) const;
+    void RemoveEntityGroup(Entity entity, const std::string& group);
+    void RemoveEntityGroups(Entity entity);
 
     // System management
     template <typename T, typename... TArgs>
