@@ -73,6 +73,7 @@ class ProjectileEmitSystem : public System {
         }
 
         auto projectile = registry->CreateEntity();
+        projectile.Group("projectiles");
         projectile.AddComponent<TransformComponent>(projectilePosition, glm::vec2(1.0, 1.0), 0.0);
         projectile.AddComponent<RigidBodyComponent>(velocity);
         projectile.AddComponent<BoxColliderComponent>(4, 4);

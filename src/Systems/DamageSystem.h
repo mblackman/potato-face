@@ -1,6 +1,8 @@
 #pragma once
 
 #include "../Components/BoxColliderComponent.h"
+#include "../Components/HealthComponent.h"
+#include "../Components/ProjectileComponent.h"
 #include "../ECS/ECS.h"
 #include "../EventBus/EventBus.h"
 #include "../Events/CollisionEvent.h"
@@ -17,9 +19,35 @@ class DamageSystem : public System {
     }
 
     void OnCollision(CollisionEvent& event) {
+        auto a = event.entityA;
+        auto b = event.entityB;
         auto aId = std::to_string(event.entityA.GetId());
         auto bId = std::to_string(event.entityB.GetId());
         Logger::Info("Damage collision received between: " + aId + " and " + bId + ".");
+
+        if (a.InGroup("projectiles") && (b.HasTag("player") || b.InGroup("enemies"))) {
+            OnProjectileHit(a, b);
+        }
+
+        if (b.InGroup("projectiles") && (a.HasTag("player") || a.InGroup("enemies"))) {
+            OnProjectileHit(b, a);
+        }
+    }
+
+    void OnProjectileHit(Entity projectile, Entity target) {
+        auto projectileComponent = projectile.GetComponent<ProjectileComponent>();
+        bool isHit = (target.HasTag("player") && !projectileComponent.isFriendly) || (target.InGroup("enemies") && projectileComponent.isFriendly);
+
+        if (isHit) {
+            auto& targetComponent = target.GetComponent<HealthComponent>();
+            targetComponent.currentHealth -= projectileComponent.damage;
+
+            if (targetComponent.currentHealth <= 0) {
+                target.Blam();
+            }
+
+            projectile.Blam();
+        }
     }
 
     void Update() {

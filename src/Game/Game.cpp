@@ -182,10 +182,11 @@ void Game::LoadLevel(int level) {
     chopper.AddComponent<TransformComponent>(glm::vec2(10, 30), glm::vec2(3, 3), 0);
     chopper.AddComponent<RigidBodyComponent>(glm::vec2(0, 0));
     chopper.AddComponent<SpriteComponent>("chopper-image", 32, 32, 1);
+    chopper.AddComponent<BoxColliderComponent>(32, 32);
     chopper.AddComponent<AnimationComponent>(2, 15, true);
     chopper.AddComponent<KeyboardControlComponent>(250.0);
     chopper.AddComponent<CameraFollowComponent>();
-    chopper.AddComponent<ProjectileEmitterComponent>(glm::vec2(150, 150), 5000, 0, 10, true);
+    chopper.AddComponent<ProjectileEmitterComponent>(glm::vec2(150, 150), 5000, 0, 100, true);
     chopper.AddComponent<HealthComponent>(100);
 
     //  Radar
@@ -201,7 +202,7 @@ void Game::LoadLevel(int level) {
     tank.AddComponent<RigidBodyComponent>(glm::vec2(-50, 0));
     tank.AddComponent<SpriteComponent>("tank-image", 32, 32, 1);
     tank.AddComponent<BoxColliderComponent>(32, 32);
-    tank.AddComponent<ProjectileEmitterComponent>(glm::vec2(-100, 0), 10000, 5000, 10, false);
+    tank.AddComponent<ProjectileEmitterComponent>(glm::vec2(-100, 0), 10000, 5000, 100, false);
     tank.AddComponent<HealthComponent>(100);
 
     // Create an entity for the truck
@@ -211,7 +212,7 @@ void Game::LoadLevel(int level) {
     truck.AddComponent<RigidBodyComponent>(glm::vec2(50, 0));
     truck.AddComponent<SpriteComponent>("truck-image", 32, 32, 1);
     truck.AddComponent<BoxColliderComponent>(32, 32);
-    truck.AddComponent<ProjectileEmitterComponent>(glm::vec2(100, 0), 10000, 2000, 10, false);
+    truck.AddComponent<ProjectileEmitterComponent>(glm::vec2(100, 0), 10000, 2000, 100, false);
     truck.AddComponent<HealthComponent>(100);
 }
 
