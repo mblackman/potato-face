@@ -15,7 +15,7 @@ template <typename T>
 class Pool : public IPool {
    private:
     std::vector<T> data_;
-    int size_;
+    size_t size_;
 
     std::unordered_map<int, int> index_to_ids_;
     std::unordered_map<int, int> id_to_indexes_;
@@ -29,7 +29,7 @@ class Pool : public IPool {
         return size_ == 0;
     }
 
-    int GetSize() const {
+    size_t GetSize() const {
         return size_;
     }
 
@@ -49,7 +49,7 @@ class Pool : public IPool {
             int index = id_to_indexes_[id];
             data_[index] = value;
         } else {
-            int index = size_;
+            size_t index = size_;
             id_to_indexes_.emplace(id, index);
             index_to_ids_.emplace(index, id);
 
