@@ -28,11 +28,13 @@
 #include "../Systems/CameraFollowSystem.h"
 #include "../Systems/CollisionSystem.h"
 #include "../Systems/DamageSystem.h"
+#include "../Systems/DisplayHealthSystem.h"
 #include "../Systems/DrawColliderSystem.h"
 #include "../Systems/KeyboardControlSystem.h"
 #include "../Systems/MovementSystem.h"
 #include "../Systems/ProjectileEmitSystem.h"
 #include "../Systems/ProjectileLifecycleSystem.h"
+#include "../Systems/RenderPrimitiveSystem.h"
 #include "../Systems/RenderSystem.h"
 #include "../Systems/RenderTextSystem.h"
 
@@ -126,6 +128,7 @@ void Game::LoadLevel(int level) {
     registry_->AddSystem<MovementSystem>();
     registry_->AddSystem<RenderSystem>();
     registry_->AddSystem<RenderTextSystem>();
+    registry_->AddSystem<RenderPrimitiveSystem>();
     registry_->AddSystem<AnimationSystem>();
     registry_->AddSystem<CollisionSystem>();
     registry_->AddSystem<DrawColliderSystem>();
@@ -134,6 +137,7 @@ void Game::LoadLevel(int level) {
     registry_->AddSystem<CameraFollowSystem>();
     registry_->AddSystem<ProjectileEmitSystem>();
     registry_->AddSystem<ProjectileLifecycleSystem>();
+    registry_->AddSystem<DisplayHealthSystem>();
 
     // Add assets to asset manager
     asset_manager_->AddTexture(renderer_, "tank-image", "./assets/images/tank-panther-right.png");
@@ -213,7 +217,7 @@ void Game::LoadLevel(int level) {
     tank.AddComponent<RigidBodyComponent>(glm::vec2(-50, 0));
     tank.AddComponent<SpriteComponent>("tank-image", 32, 32, 1);
     tank.AddComponent<BoxColliderComponent>(32, 32);
-    tank.AddComponent<ProjectileEmitterComponent>(glm::vec2(-100, 0), 10000, 5000, 100, false);
+    tank.AddComponent<ProjectileEmitterComponent>(glm::vec2(-100, 0), 10000, 5000, 33, false);
     tank.AddComponent<HealthComponent>(100);
 
     // Create an entity for the truck
@@ -223,12 +227,8 @@ void Game::LoadLevel(int level) {
     truck.AddComponent<RigidBodyComponent>(glm::vec2(50, 0));
     truck.AddComponent<SpriteComponent>("truck-image", 32, 32, 1);
     truck.AddComponent<BoxColliderComponent>(32, 32);
-    truck.AddComponent<ProjectileEmitterComponent>(glm::vec2(100, 0), 10000, 2000, 100, false);
+    truck.AddComponent<ProjectileEmitterComponent>(glm::vec2(100, 0), 10000, 2000, 33, false);
     truck.AddComponent<HealthComponent>(100);
-
-    // Test label
-    auto label = registry_->CreateEntity();
-    label.AddComponent<TextLabelComponent>(glm::vec2(10, 10), "Hello World", "charriot-font", SDL_Color{255, 255, 255, 255}, true);
 }
 
 void Game::Setup() {
@@ -283,6 +283,7 @@ void Game::Update() {
     registry_->GetSystem<CameraFollowSystem>().Update(camera_);
     registry_->GetSystem<ProjectileEmitSystem>().Update(registry_);
     registry_->GetSystem<ProjectileLifecycleSystem>().Update();
+    registry_->GetSystem<DisplayHealthSystem>().Update(registry_);
     registry_->Update();
 }
 
@@ -293,6 +294,7 @@ void Game::Render() {
     // TODO: Render with ECS
     registry_->GetSystem<RenderSystem>().Update(renderer_, asset_manager_, camera_);
     registry_->GetSystem<RenderTextSystem>().Update(renderer_, asset_manager_, camera_);
+    registry_->GetSystem<RenderPrimitiveSystem>().Update(renderer_, camera_);
 
     if (show_colliders_) {
         registry_->GetSystem<DrawColliderSystem>().Update(renderer_, camera_);
