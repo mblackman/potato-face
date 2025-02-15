@@ -2,6 +2,9 @@
 
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
+#include <imgui/imgui.h>
+#include <imgui/imgui_impl_sdl2.h>
+#include <imgui/imgui_impl_sdlrenderer2.h>
 
 #include <fstream>
 #include <glm/glm.hpp>
@@ -97,6 +100,11 @@ void Game::Initialize() {
         return;
     }
 
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+    ImGui_ImplSDL2_InitForSDLRenderer(window_, renderer_);
+    ImGui_ImplSDLRenderer2_Init(renderer_);
+
     camera_.x = 0;
     camera_.y = 0;
     camera_.w = windowWidth;
@@ -108,6 +116,9 @@ void Game::Initialize() {
 }
 
 void Game::Destroy() {
+    ImGui_ImplSDLRenderer2_Shutdown();
+    ImGui_ImplSDL2_Shutdown();
+    ImGui::DestroyContext();
     SDL_DestroyRenderer(renderer_);
     SDL_DestroyWindow(window_);
     SDL_Quit();
@@ -239,6 +250,14 @@ void Game::ProcessInput() {
     SDL_Event event;
 
     while (SDL_PollEvent(&event)) {
+        ImGui_ImplSDL2_ProcessEvent(&event);
+        auto& io = ImGui::GetIO();
+        int mouseX, mouseY;
+        const int buttons = SDL_GetMouseState(&mouseX, &mouseY);
+        io.MousePos = ImVec2(static_cast<float>(mouseX), static_cast<float>(mouseY));
+        io.MouseDown[0] = buttons & SDL_BUTTON(SDL_BUTTON_LEFT);
+        io.MouseDown[1] = buttons & SDL_BUTTON(SDL_BUTTON_RIGHT);
+
         switch (event.type) {
             case SDL_QUIT:
                 is_running_ = false;
@@ -291,6 +310,10 @@ void Game::Render() {
     SDL_SetRenderDrawColor(renderer_, 21, 21, 21, 255);
     SDL_RenderClear(renderer_);
 
+    ImGui_ImplSDLRenderer2_NewFrame();
+    ImGui_ImplSDL2_NewFrame();
+    ImGui::NewFrame();
+
     // TODO: Render with ECS
     registry_->GetSystem<RenderSystem>().Update(renderer_, asset_manager_, camera_);
     registry_->GetSystem<RenderTextSystem>().Update(renderer_, asset_manager_, camera_);
@@ -298,8 +321,12 @@ void Game::Render() {
 
     if (show_colliders_) {
         registry_->GetSystem<DrawColliderSystem>().Update(renderer_, camera_);
+
+        ImGui::ShowDemoWindow();
     }
 
+    ImGui::Render();
+    ImGui_ImplSDLRenderer2_RenderDrawData(ImGui::GetDrawData(), renderer_);
     SDL_RenderPresent(renderer_);
 }
 

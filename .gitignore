@@ -40,3 +40,5 @@
 
 # Build folder
 bin/
+
+imgui.ini
