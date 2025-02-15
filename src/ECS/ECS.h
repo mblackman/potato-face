@@ -270,10 +270,6 @@ void Registry::AddComponent(const Entity entity, TArgs&&... args) {
 
     auto componentPool = std::static_pointer_cast<Pool<T>>(component_pools_[componentId]);
 
-    if (entityId >= static_cast<int>(componentPool->GetSize())) {
-        componentPool->Resize(num_entities_);
-    }
-
     componentPool->Set(entityId, newComponent);
 
     entity_component_signatures_[entityId].set(componentId);
@@ -287,6 +283,9 @@ void Registry::RemoveComponent(const Entity entity) {
     const auto entityId = entity.GetId();
 
     entity_component_signatures_[entityId].set(componentId, false);
+
+    auto componentPool = std::static_pointer_cast<Pool<T>>(component_pools_[componentId]);
+    componentPool->Remove(entityId);
 
     Logger::Info("Removed component: " + std::to_string(entityId) + " from entity: " + std::to_string(entityId));
 }

@@ -4,7 +4,8 @@
 
 class IPool {
    public:
-    virtual ~IPool() {}
+    virtual ~IPool() = default;
+    virtual void Remove(int id) = 0;
 };
 
 /**
@@ -14,20 +15,22 @@ template <typename T>
 class Pool : public IPool {
    private:
     std::vector<T> data_;
+    int size_;
+
+    std::unordered_map<int, int> index_to_ids_;
+    std::unordered_map<int, int> id_to_indexes_;
 
    public:
-    Pool(size_t size = 100) {
+    Pool(size_t size = 100) : size_(0), index_to_ids_(), id_to_indexes_() {
         Resize(size);
     }
 
-    virtual ~Pool() = default;
-
-    void IsEmpty() const {
-        return data_.empty();
+    bool IsEmpty() const {
+        return size_ == 0;
     }
 
-    std::size_t GetSize() const {
-        return data_.size();
+    int GetSize() const {
+        return size_;
     }
 
     void Resize(size_t size) {
@@ -36,18 +39,56 @@ class Pool : public IPool {
 
     void Clear() {
         data_.clear();
+        size_ = 0;
+        index_to_ids_.clear();
+        id_to_indexes_.clear();
     }
 
-    void Add(const T value) {
-        data_.push_back(value);
+    void Set(int id, const T value) {
+        if (id_to_indexes_.find(id) != id_to_indexes_.end()) {
+            int index = id_to_indexes_[id];
+            data_[index] = value;
+        } else {
+            int index = size_;
+            id_to_indexes_.emplace(id, index);
+            index_to_ids_.emplace(index, id);
+
+            if (index >= data_.capacity()) {
+                Resize(size_ * 2);
+            }
+
+            data_[index] = value;
+            size_++;
+        }
     }
 
-    void Set(int index, const T value) {
-        data_[index] = value;
+    void Remove(int id) override {
+        auto index = id_to_indexes_.find(id);
+        if (index == id_to_indexes_.end()) {
+            return;
+        }
+
+        int indexOfRemoved = index->second;
+        int indexOfLast = size_ - 1;
+        data_[indexOfRemoved] = data_[indexOfLast];
+
+        int entityIdOfLastElement = index_to_ids_[indexOfLast];
+        id_to_indexes_[entityIdOfLastElement] = indexOfRemoved;
+        index_to_ids_[indexOfRemoved] = entityIdOfLastElement;
+
+        id_to_indexes_.erase(id);
+        index_to_ids_.erase(indexOfLast);
+
+        size_--;
     }
 
-    T& Get(int index) {
-        return static_cast<T&>(data_[index]);
+    T& Get(int id) {
+        auto index = id_to_indexes_.find(id);
+        if (index == id_to_indexes_.end()) {
+            throw std::runtime_error("Element not found with id: " + std::to_string(id));
+        }
+
+        return static_cast<T&>(data_[index->second]);
     }
 
     T& operator[](unsigned int index) {

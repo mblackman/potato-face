@@ -114,6 +114,12 @@ void Registry::Update() {
         free_ids_.push_front(entity.GetId());
         entity_component_signatures_[entity.GetId()].reset();
 
+        for (auto pool : component_pools_) {
+            if (pool) {
+                pool->Remove(entity.GetId());
+            }
+        }
+
         RemoveEntityTag(entity);
         RemoveEntityGroups(entity);
 
