@@ -19,6 +19,7 @@
 #include "../Components/ProjectileEmitterComponent.h"
 #include "../Components/RigidBodyComponent.h"
 #include "../Components/SpriteComponent.h"
+#include "../Components/TextLabelComponent.h"
 #include "../Components/TransformComponent.h"
 #include "../ECS/ECS.h"
 #include "../Events/KeyInputEvent.h"
@@ -33,6 +34,7 @@
 #include "../Systems/ProjectileEmitSystem.h"
 #include "../Systems/ProjectileLifecycleSystem.h"
 #include "../Systems/RenderSystem.h"
+#include "../Systems/RenderTextSystem.h"
 
 int Game::windowWidth;
 int Game::windowHeight;
@@ -60,6 +62,11 @@ void Game::Initialize() {
 
     if (result != 0) {
         Logger::Error("SDL_Init Error: " + std::string(SDL_GetError()));
+        return;
+    }
+
+    if (TTF_Init() != 0) {
+        Logger::Error("TTF_Init Error: " + std::string(TTF_GetError()));
         return;
     }
 
@@ -118,6 +125,7 @@ void Game::LoadLevel(int level) {
     // Add systems
     registry_->AddSystem<MovementSystem>();
     registry_->AddSystem<RenderSystem>();
+    registry_->AddSystem<RenderTextSystem>();
     registry_->AddSystem<AnimationSystem>();
     registry_->AddSystem<CollisionSystem>();
     registry_->AddSystem<DrawColliderSystem>();
@@ -133,6 +141,9 @@ void Game::LoadLevel(int level) {
     asset_manager_->AddTexture(renderer_, "chopper-image", "./assets/images/chopper-spritesheet.png");
     asset_manager_->AddTexture(renderer_, "radar-image", "./assets/images/radar.png");
     asset_manager_->AddTexture(renderer_, "bullet-image", "./assets/images/bullet.png");
+
+    asset_manager_->AddFont("arial-font", "./assets/fonts/arial.ttf", 20);
+    asset_manager_->AddFont("charriot-font", "./assets/fonts/charriot.ttf", 20);
 
     // Load Tilemap
     asset_manager_->AddTexture(renderer_, "jungle-tile-map", "./assets/tilemaps/jungle.png");
@@ -214,6 +225,10 @@ void Game::LoadLevel(int level) {
     truck.AddComponent<BoxColliderComponent>(32, 32);
     truck.AddComponent<ProjectileEmitterComponent>(glm::vec2(100, 0), 10000, 2000, 100, false);
     truck.AddComponent<HealthComponent>(100);
+
+    // Test label
+    auto label = registry_->CreateEntity();
+    label.AddComponent<TextLabelComponent>(glm::vec2(10, 10), "Hello World", "charriot-font", SDL_Color{255, 255, 255, 255}, true);
 }
 
 void Game::Setup() {
@@ -277,6 +292,7 @@ void Game::Render() {
 
     // TODO: Render with ECS
     registry_->GetSystem<RenderSystem>().Update(renderer_, asset_manager_, camera_);
+    registry_->GetSystem<RenderTextSystem>().Update(renderer_, asset_manager_, camera_);
 
     if (show_colliders_) {
         registry_->GetSystem<DrawColliderSystem>().Update(renderer_, camera_);
