@@ -37,6 +37,7 @@
 #include "../Systems/MovementSystem.h"
 #include "../Systems/ProjectileEmitSystem.h"
 #include "../Systems/ProjectileLifecycleSystem.h"
+#include "../Systems/RenderGUISystem.h"
 #include "../Systems/RenderPrimitiveSystem.h"
 #include "../Systems/RenderSystem.h"
 #include "../Systems/RenderTextSystem.h"
@@ -140,6 +141,7 @@ void Game::LoadLevel(int level) {
     registry_->AddSystem<RenderSystem>();
     registry_->AddSystem<RenderTextSystem>();
     registry_->AddSystem<RenderPrimitiveSystem>();
+    registry_->AddSystem<RenderGUISystem>();
     registry_->AddSystem<AnimationSystem>();
     registry_->AddSystem<CollisionSystem>();
     registry_->AddSystem<DrawColliderSystem>();
@@ -310,10 +312,6 @@ void Game::Render() {
     SDL_SetRenderDrawColor(renderer_, 21, 21, 21, 255);
     SDL_RenderClear(renderer_);
 
-    ImGui_ImplSDLRenderer2_NewFrame();
-    ImGui_ImplSDL2_NewFrame();
-    ImGui::NewFrame();
-
     // TODO: Render with ECS
     registry_->GetSystem<RenderSystem>().Update(renderer_, asset_manager_, camera_);
     registry_->GetSystem<RenderTextSystem>().Update(renderer_, asset_manager_, camera_);
@@ -321,12 +319,9 @@ void Game::Render() {
 
     if (show_colliders_) {
         registry_->GetSystem<DrawColliderSystem>().Update(renderer_, camera_);
-
-        ImGui::ShowDemoWindow();
+        registry_->GetSystem<RenderGUISystem>().Update(renderer_, registry_);
     }
 
-    ImGui::Render();
-    ImGui_ImplSDLRenderer2_RenderDrawData(ImGui::GetDrawData(), renderer_);
     SDL_RenderPresent(renderer_);
 }
 

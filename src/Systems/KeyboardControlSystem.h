@@ -27,15 +27,15 @@ class KeyboardControlSystem : public System {
     }
 
     void OnKeyInput(KeyInputEvent& event) {
-        if (!event.isPressed) {
-            // rigidBodyComponent.velocity = glm::vec2(0, 0);
-            return;
-        }
-
         for (auto entity : GetEntities()) {
             auto& keyboardComponent = entity.GetComponent<KeyboardControlComponent>();
             auto& spriteComponent = entity.GetComponent<SpriteComponent>();
             auto& rigidBodyComponent = entity.GetComponent<RigidBodyComponent>();
+
+            if (!event.isPressed) {
+                rigidBodyComponent.velocity = glm::vec2(0, 0);
+                continue;
+            }
 
             switch (event.inputKey) {
                 case SDLK_UP:
