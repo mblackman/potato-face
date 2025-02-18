@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../Components/RigidBodyComponent.h"
+#include "../Components/SpriteComponent.h"
 #include "../Components/TransformComponent.h"
 #include "../ECS/ECS.h"
 #include "../General/Logger.h"
@@ -21,6 +22,25 @@ class MovementSystem : public System {
 
             transform.position.x += rigidBody.velocity.x * deltaTime;
             transform.position.y += rigidBody.velocity.y * deltaTime;
+
+            bool isEntityOutsideMap = (transform.position.x > Game::windowWidth ||
+                                       transform.position.y > Game::windowHeight);
+
+            if (!isEntityOutsideMap) {
+                if (entity.HasComponent<SpriteComponent>()) {
+                    auto sprite = entity.GetComponent<SpriteComponent>();
+                    isEntityOutsideMap = (transform.position.x + sprite.width < 0 ||
+                                          transform.position.y + sprite.height < 0);
+                } else {
+                    isEntityOutsideMap = (transform.position.x < 0 ||
+                                          transform.position.y < 0);
+                }
+            }
+
+            if (isEntityOutsideMap && !entity.HasTag("player")) {
+                Logger::Info("Entity went outside map " + std::to_string(entity.GetId()));
+                entity.Blam();
+            }
         }
     }
 };
