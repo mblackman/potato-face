@@ -13,12 +13,13 @@ class DisplayHealthSystem : public System {
    private:
     std::unordered_map<int, std::shared_ptr<Entity>> health_trackers_;
     std::set<int> living_entities_;
+    std::set<int> removed_entities_;
     SDL_Color low_health_color = {255, 0, 0};
     SDL_Color medium_health_color = {255, 255, 0};
     SDL_Color high_health_color = {0, 255, 0};
 
    public:
-    DisplayHealthSystem() : health_trackers_(), living_entities_() {
+    DisplayHealthSystem() : health_trackers_(), living_entities_(), removed_entities_() {
         RequireComponent<HealthComponent>();
         RequireComponent<TransformComponent>();
     }
@@ -27,6 +28,7 @@ class DisplayHealthSystem : public System {
 
     void Update(std::unique_ptr<Registry>& registry) {
         living_entities_.clear();
+        removed_entities_.clear();
 
         for (auto entity : GetEntities()) {
             living_entities_.emplace(entity.GetId());
@@ -62,7 +64,12 @@ class DisplayHealthSystem : public System {
             if (living_entities_.find(healthTracker.first) == living_entities_.end()) {
                 healthTracker.second->Blam();
                 living_entities_.erase(healthTracker.first);
+                removed_entities_.emplace(healthTracker.first);
             }
+        }
+
+        for (auto entityId : removed_entities_) {
+            health_trackers_.erase(entityId);
         }
     }
 
