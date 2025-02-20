@@ -20,6 +20,23 @@ class RenderSystem : public System {
 
     void Update(SDL_Renderer* renderer, std::unique_ptr<AssetManager>& assetManager, SDL_Rect& camera) {
         auto entities = GetEntities();
+
+        for (auto it = entities.begin(); it != entities.end();) {
+            auto transform = it->GetComponent<TransformComponent>();
+            auto sprite = it->GetComponent<SpriteComponent>();
+
+            bool isOutsideCamera = (transform.position.x + sprite.width * transform.scale.x < camera.x ||
+                                    transform.position.x > camera.x + camera.w ||
+                                    transform.position.y + sprite.height * transform.scale.y < camera.y ||
+                                    transform.position.y > camera.y + camera.h);
+
+            if (isOutsideCamera) {
+                it = entities.erase(it);
+            } else {
+                it++;
+            }
+        }
+
         std::sort(
             entities.begin(),
             entities.end(),
