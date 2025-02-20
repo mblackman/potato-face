@@ -39,27 +39,33 @@ class MovementSystem : public System {
         for (auto entity : GetEntities()) {
             auto& transform = entity.GetComponent<TransformComponent>();
             const auto rigidBody = entity.GetComponent<RigidBodyComponent>();
+            bool isPlayer = entity.HasTag("player");
 
-            transform.position.x += rigidBody.velocity.x * deltaTime;
-            transform.position.y += rigidBody.velocity.y * deltaTime;
-
-            bool isEntityOutsideMap = (transform.position.x > Game::windowWidth ||
-                                       transform.position.y > Game::windowHeight);
-
-            if (!isEntityOutsideMap) {
-                if (entity.HasComponent<SpriteComponent>()) {
-                    auto sprite = entity.GetComponent<SpriteComponent>();
-                    isEntityOutsideMap = (transform.position.x + sprite.width * transform.scale.x < 0 ||
-                                          transform.position.y + sprite.height * transform.scale.y < 0);
-                } else {
-                    isEntityOutsideMap = (transform.position.x < 0 ||
-                                          transform.position.y < 0);
-                }
-            }
-
-            if (isEntityOutsideMap && !entity.HasTag("player")) {
+            if (!isPlayer && IsEntityOutsideMap(entity)) {
                 Logger::Info("Entity went outside map " + std::to_string(entity.GetId()));
                 entity.Blam();
+            } else {
+                transform.position.x += rigidBody.velocity.x * deltaTime;
+                transform.position.y += rigidBody.velocity.y * deltaTime;
+
+                if (isPlayer) {
+                    auto spriteComponent = entity.GetComponent<SpriteComponent>();
+                    if (transform.position.x < 0) {
+                        transform.position.x = 0;
+                    }
+
+                    if (transform.position.y < 0) {
+                        transform.position.y = 0;
+                    }
+
+                    if (transform.position.x + spriteComponent.width * transform.scale.x > Game::mapWidth) {
+                        transform.position.x = Game::mapWidth - spriteComponent.width * transform.scale.x;
+                    }
+
+                    if (transform.position.y + spriteComponent.height * transform.scale.y > Game::mapHeight) {
+                        transform.position.y = Game::mapHeight - spriteComponent.height * transform.scale.y;
+                    }
+                }
             }
         }
     }
@@ -74,5 +80,24 @@ class MovementSystem : public System {
             auto& sprite = enemy.GetComponent<SpriteComponent>();
             sprite.flip = sprite.flip == SDL_FLIP_NONE ? SDL_FLIP_HORIZONTAL : SDL_FLIP_NONE;
         }
+    }
+
+    bool IsEntityOutsideMap(Entity entity) {
+        auto transform = entity.GetComponent<TransformComponent>();
+        bool isEntityOutsideMap = (transform.position.x > Game::windowWidth ||
+                                   transform.position.y > Game::windowHeight);
+
+        if (!isEntityOutsideMap) {
+            if (entity.HasComponent<SpriteComponent>()) {
+                auto sprite = entity.GetComponent<SpriteComponent>();
+                isEntityOutsideMap = (transform.position.x + sprite.width * transform.scale.x < 0 ||
+                                      transform.position.y + sprite.height * transform.scale.y < 0);
+            } else {
+                isEntityOutsideMap = (transform.position.x < 0 ||
+                                      transform.position.y < 0);
+            }
+        }
+
+        return isEntityOutsideMap;
     }
 };
