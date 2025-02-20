@@ -25,10 +25,19 @@ class RenderSystem : public System {
             auto transform = it->GetComponent<TransformComponent>();
             auto sprite = it->GetComponent<SpriteComponent>();
 
-            bool isOutsideCamera = (transform.position.x + sprite.width * transform.scale.x < camera.x ||
-                                    transform.position.x > camera.x + camera.w ||
-                                    transform.position.y + sprite.height * transform.scale.y < camera.y ||
-                                    transform.position.y > camera.y + camera.h);
+            bool isOutsideCamera = false;
+
+            if (sprite.isFixed) {
+                isOutsideCamera = (transform.position.x + sprite.width * transform.scale.x < 0 ||
+                                   transform.position.x > Game::windowWidth ||
+                                   transform.position.y + sprite.height * transform.scale.y < 0 ||
+                                   transform.position.y > Game::windowHeight);
+            } else {
+                isOutsideCamera = (transform.position.x + sprite.width * transform.scale.x < camera.x ||
+                                   transform.position.x > camera.x + camera.w ||
+                                   transform.position.y + sprite.height * transform.scale.y < camera.y ||
+                                   transform.position.y > camera.y + camera.h);
+            }
 
             if (isOutsideCamera) {
                 it = entities.erase(it);
