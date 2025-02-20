@@ -15,6 +15,26 @@ class MovementSystem : public System {
 
     ~MovementSystem() = default;
 
+    void SubscribeToEvents(std::unique_ptr<EventBus>& eventBus) {
+        eventBus->SubscribeEvent<MovementSystem, CollisionEvent>(this, &MovementSystem::OnCollision);
+    }
+
+    void OnCollision(CollisionEvent& event) {
+        auto a = event.entityA;
+        auto b = event.entityB;
+        auto aId = std::to_string(event.entityA.GetId());
+        auto bId = std::to_string(event.entityB.GetId());
+        Logger::Info("Movement collision received between: " + aId + " and " + bId + ".");
+
+        if (a.InGroup("enemies") && b.InGroup("obstacles")) {
+            OnObstacleCollision(a);
+        }
+
+        if (b.InGroup("enemies") && a.InGroup("obstacles")) {
+            OnObstacleCollision(b);
+        }
+    }
+
     void Update(double deltaTime) {
         for (auto entity : GetEntities()) {
             auto& transform = entity.GetComponent<TransformComponent>();
@@ -29,8 +49,8 @@ class MovementSystem : public System {
             if (!isEntityOutsideMap) {
                 if (entity.HasComponent<SpriteComponent>()) {
                     auto sprite = entity.GetComponent<SpriteComponent>();
-                    isEntityOutsideMap = (transform.position.x + sprite.width < 0 ||
-                                          transform.position.y + sprite.height < 0);
+                    isEntityOutsideMap = (transform.position.x + sprite.width * transform.scale.x < 0 ||
+                                          transform.position.y + sprite.height * transform.scale.y < 0);
                 } else {
                     isEntityOutsideMap = (transform.position.x < 0 ||
                                           transform.position.y < 0);
@@ -41,6 +61,18 @@ class MovementSystem : public System {
                 Logger::Info("Entity went outside map " + std::to_string(entity.GetId()));
                 entity.Blam();
             }
+        }
+    }
+
+   private:
+    void OnObstacleCollision(Entity enemy) {
+        auto& rigidBody = enemy.GetComponent<RigidBodyComponent>();
+
+        rigidBody.velocity = rigidBody.velocity * -1.0f;
+
+        if (enemy.HasComponent<SpriteComponent>()) {
+            auto& sprite = enemy.GetComponent<SpriteComponent>();
+            sprite.flip = sprite.flip == SDL_FLIP_NONE ? SDL_FLIP_HORIZONTAL : SDL_FLIP_NONE;
         }
     }
 };

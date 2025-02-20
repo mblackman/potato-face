@@ -158,6 +158,7 @@ void Game::LoadLevel(int level) {
     asset_manager_->AddTexture(renderer_, "chopper-image", "./assets/images/chopper-spritesheet.png");
     asset_manager_->AddTexture(renderer_, "radar-image", "./assets/images/radar.png");
     asset_manager_->AddTexture(renderer_, "bullet-image", "./assets/images/bullet.png");
+    asset_manager_->AddTexture(renderer_, "tree-image", "./assets/images/tree.png");
 
     asset_manager_->AddFont("arial-font", "./assets/fonts/arial.ttf", 20);
     asset_manager_->AddFont("charriot-font", "./assets/fonts/charriot.ttf", 20);
@@ -226,22 +227,34 @@ void Game::LoadLevel(int level) {
     // Create an entity for the tank
     auto tank = registry_->CreateEntity();
     tank.Group("enemies");
-    tank.AddComponent<TransformComponent>(glm::vec2(500, 10), glm::vec2(3, 3), 180);
-    tank.AddComponent<RigidBodyComponent>(glm::vec2(-50, 0));
+    tank.AddComponent<TransformComponent>(glm::vec2(500, 500), glm::vec2(3, 3), 0);
+    tank.AddComponent<RigidBodyComponent>(glm::vec2(35, 0));
     tank.AddComponent<SpriteComponent>("tank-image", 32, 32, 1);
     tank.AddComponent<BoxColliderComponent>(32, 32);
-    tank.AddComponent<ProjectileEmitterComponent>(glm::vec2(-100, 0), 10000, 5000, 33, false);
+    tank.AddComponent<ProjectileEmitterComponent>(glm::vec2(0, -90), 10000, 5000, 33, false);
     tank.AddComponent<HealthComponent>(100);
 
     // Create an entity for the truck
     auto truck = registry_->CreateEntity();
     truck.Group("enemies");
-    truck.AddComponent<TransformComponent>(glm::vec2(10, 10), glm::vec2(3, 3), 0.0);
-    truck.AddComponent<RigidBodyComponent>(glm::vec2(50, 0));
+    truck.AddComponent<TransformComponent>(glm::vec2(120, 500), glm::vec2(3, 3), 0.0);
+    truck.AddComponent<RigidBodyComponent>(glm::vec2(0, 0));
     truck.AddComponent<SpriteComponent>("truck-image", 32, 32, 1);
     truck.AddComponent<BoxColliderComponent>(32, 32);
     truck.AddComponent<ProjectileEmitterComponent>(glm::vec2(100, 0), 10000, 2000, 33, false);
     truck.AddComponent<HealthComponent>(100);
+
+    auto tree1 = registry_->CreateEntity();
+    tree1.Group("obstacles");
+    tree1.AddComponent<TransformComponent>(glm::vec2(650, 500), glm::vec2(3, 3), 0.0);
+    tree1.AddComponent<SpriteComponent>("tree-image", 16, 32, 2);
+    tree1.AddComponent<BoxColliderComponent>(16, 32);
+
+    auto tree2 = registry_->CreateEntity();
+    tree2.Group("obstacles");
+    tree2.AddComponent<TransformComponent>(glm::vec2(400, 500), glm::vec2(3, 3), 0.0);
+    tree2.AddComponent<SpriteComponent>("tree-image", 16, 32, 2);
+    tree2.AddComponent<BoxColliderComponent>(16, 32);
 }
 
 void Game::Setup() {
@@ -289,6 +302,7 @@ void Game::Update() {
     registry_->GetSystem<DamageSystem>().SubscribeToEvents(event_bus_);
     registry_->GetSystem<KeyboardControlSystem>().SubscribeToEvents(event_bus_);
     registry_->GetSystem<ProjectileEmitSystem>().SubscribeToEvents(event_bus_);
+    registry_->GetSystem<MovementSystem>().SubscribeToEvents(event_bus_);
     SubscribeToEvents(event_bus_);
 
     // Calculate delta time
