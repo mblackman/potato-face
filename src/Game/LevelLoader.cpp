@@ -11,6 +11,7 @@
 #include "../Components/KeyboardControlComponent.h"
 #include "../Components/ProjectileEmitterComponent.h"
 #include "../Components/RigidBodyComponent.h"
+#include "../Components/ScriptComponent.h"
 #include "../Components/SpriteComponent.h"
 #include "../Components/TextLabelComponent.h"
 #include "../Components/TransformComponent.h"
@@ -106,6 +107,9 @@ void LevelLoader::LoadLevel(sol::state& lua, const std::unique_ptr<Registry>& re
 
     Game::mapWidth = columnNumber * tileWidth * tileMapScale;
     Game::mapHeight = rowNumber * tileHeight * tileMapScale;
+
+    lua["map_width"] = Game::mapWidth;
+    lua["map_height"] = Game::mapHeight;
 
     // Create entities
     sol::table entities = level["entities"];
@@ -220,6 +224,12 @@ void LevelLoader::LoadLevel(sol::state& lua, const std::unique_ptr<Registry>& re
             if (keyboardControlled != sol::nullopt) {
                 double velocity = entity["components"]["keyboard_controller"]["velocity"];
                 newEntity.AddComponent<KeyboardControlComponent>(velocity);
+            }
+
+            sol::optional<sol::table> script = entity["components"]["on_update_script"];
+            if (script != sol::nullopt) {
+                sol::function scriptFunction = entity["components"]["on_update_script"][0];
+                newEntity.AddComponent<ScriptComponent>(scriptFunction);
             }
         }
         i++;

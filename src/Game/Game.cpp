@@ -30,6 +30,7 @@
 #include "../Systems/RenderPrimitiveSystem.h"
 #include "../Systems/RenderSystem.h"
 #include "../Systems/RenderTextSystem.h"
+#include "../Systems/ScriptSystem.h"
 #include "./LevelLoader.h"
 
 int Game::windowWidth;
@@ -140,9 +141,11 @@ void Game::Setup() {
     registry_->AddSystem<ProjectileEmitSystem>();
     registry_->AddSystem<ProjectileLifecycleSystem>();
     registry_->AddSystem<DisplayHealthSystem>();
+    registry_->AddSystem<ScriptSystem>();
 
     LevelLoader loader;
     lua.open_libraries(sol::lib::base, sol::lib::math);
+    registry_->GetSystem<ScriptSystem>().CreateLuaBindings(lua);
     loader.LoadLevel(lua, registry_, asset_manager_, renderer_, 1);
 }
 
@@ -204,6 +207,7 @@ void Game::Update() {
     registry_->GetSystem<ProjectileEmitSystem>().Update(registry_);
     registry_->GetSystem<ProjectileLifecycleSystem>().Update();
     registry_->GetSystem<DisplayHealthSystem>().Update(registry_);
+    registry_->GetSystem<ScriptSystem>().Update(deltaTime, SDL_GetTicks());
     registry_->Update();
 }
 

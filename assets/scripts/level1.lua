@@ -8,6 +8,7 @@ Level = {
         { type = "texture", id = "tilemap-texture", file = "./assets/tilemaps/jungle.png" },
         { type = "texture", id = "chopper-texture", file = "./assets/images/chopper-spritesheet.png" },
         { type = "texture", id = "tank-texture",    file = "./assets/images/tank-tiger-up.png" },
+        { type = "texture", id = "truck-texture",    file = "./assets/images/truck-ford-up.png" },
         { type = "texture", id = "bullet-texture",  file = "./assets/images/bullet.png" },
         { type = "font"   , id = "arial-font-5",    file = "./assets/fonts/arial.ttf", font_size = 5 },
         { type = "font"   , id = "arial-font-10",   file = "./assets/fonts/arial.ttf", font_size = 10 }
@@ -106,6 +107,85 @@ Level = {
                     repeat_frequency = 1, -- seconds
                     hit_damage = 20,
                     friendly = false
+                }
+            }
+        },
+        {
+            -- Truck
+            group = "enemies",
+            components = {
+                transform = {
+                    position = { x = 500, y = 497 },
+                    scale = { x = 1.0, y = 1.0 },
+                    rotation = 0.0, -- degrees
+                },
+                sprite = {
+                    texture_asset_id = "truck-texture",
+                    width = 32,
+                    height = 32,
+                    z_index = 2
+                },
+                boxcollider = {
+                    width = 25,
+                    height = 18,
+                    offset = { x = 0, y = 7 }
+                },
+                health = {
+                    max_health = 100
+                },
+                projectile_emitter = {
+                    projectile_velocity = { x = 100, y = 0 },
+                    projectile_duration = 2, -- seconds
+                    repeat_frequency = 1, -- seconds
+                    hit_damage = 20,
+                    friendly = false
+                },
+                on_update_script = {
+                    [0] = 
+                    function(entity, delta_time, elapsed_time) 
+                        print("Truck update script")
+                    end
+                }
+            }
+        },
+        {
+            -- Truck Sin
+            group = "enemies",
+            components = {
+                transform = {
+                    position = { x = 500, y = 497 },
+                    scale = { x = 1.0, y = 1.0 },
+                    rotation = 0.0, -- degrees
+                },
+                sprite = {
+                    texture_asset_id = "truck-texture",
+                    width = 32,
+                    height = 32,
+                    z_index = 2
+                },
+                boxcollider = {
+                    width = 25,
+                    height = 18,
+                    offset = { x = 0, y = 7 }
+                },
+                health = {
+                    max_health = 100
+                },
+                projectile_emitter = {
+                    projectile_velocity = { x = 100, y = 0 },
+                    projectile_duration = 2, -- seconds
+                    repeat_frequency = 1, -- seconds
+                    hit_damage = 20,
+                    friendly = false
+                },
+                on_update_script = {
+                    [0] = 
+                    function(entity, delta_time, elapsed_time) 
+                        print("Sin Truck update script")
+                        local new_x = elapsed_time * 0.09
+                        local new_y = 200 + (math.sin(elapsed_time * 0.001) * 50)
+                        set_position(entity, new_x, new_y)
+                    end
                 }
             }
         }
