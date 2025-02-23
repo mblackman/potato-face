@@ -77,7 +77,7 @@ class ProjectileEmitSystem : public System {
         projectile.AddComponent<TransformComponent>(projectilePosition, glm::vec2(1.0, 1.0), 0.0);
         projectile.AddComponent<RigidBodyComponent>(velocity);
         projectile.AddComponent<BoxColliderComponent>(4, 4);
-        projectile.AddComponent<SpriteComponent>("bullet-image", 4, 4, 4);
+        projectile.AddComponent<SpriteComponent>("bullet-texture", 4, 4, 4);
         projectile.AddComponent<ProjectileComponent>(emitter.damage, SDL_GetTicks(), emitter.duration, emitter.isFriendly);
 
         emitter.lastEmissionTime = SDL_GetTicks();

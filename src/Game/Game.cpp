@@ -6,24 +6,13 @@
 #include <imgui/imgui_impl_sdl2.h>
 #include <imgui/imgui_impl_sdlrenderer2.h>
 
-#include <fstream>
 #include <glm/glm.hpp>
 #include <iostream>
 #include <memory>
-#include <sstream>
+#include <sol/sol.hpp>
 #include <string>
 #include <vector>
 
-#include "../Components/AnimationComponent.h"
-#include "../Components/BoxColliderComponent.h"
-#include "../Components/CameraFollowComponent.h"
-#include "../Components/HealthComponent.h"
-#include "../Components/KeyboardControlComponent.h"
-#include "../Components/ProjectileEmitterComponent.h"
-#include "../Components/RigidBodyComponent.h"
-#include "../Components/SpriteComponent.h"
-#include "../Components/TextLabelComponent.h"
-#include "../Components/TransformComponent.h"
 #include "../ECS/ECS.h"
 #include "../Events/KeyInputEvent.h"
 #include "../General/Logger.h"
@@ -41,6 +30,7 @@
 #include "../Systems/RenderPrimitiveSystem.h"
 #include "../Systems/RenderSystem.h"
 #include "../Systems/RenderTextSystem.h"
+#include "./LevelLoader.h"
 
 int Game::windowWidth;
 int Game::windowHeight;
@@ -135,8 +125,7 @@ void Game::Run() {
     }
 }
 
-void Game::LoadLevel(int level) {
-    // Add systems
+void Game::Setup() {
     registry_->AddSystem<MovementSystem>();
     registry_->AddSystem<RenderSystem>();
     registry_->AddSystem<RenderTextSystem>();
@@ -152,113 +141,9 @@ void Game::LoadLevel(int level) {
     registry_->AddSystem<ProjectileLifecycleSystem>();
     registry_->AddSystem<DisplayHealthSystem>();
 
-    // Add assets to asset manager
-    asset_manager_->AddTexture(renderer_, "tank-image", "./assets/images/tank-panther-right.png");
-    asset_manager_->AddTexture(renderer_, "truck-image", "./assets/images/truck-ford-right.png");
-    asset_manager_->AddTexture(renderer_, "chopper-image", "./assets/images/chopper-spritesheet.png");
-    asset_manager_->AddTexture(renderer_, "radar-image", "./assets/images/radar.png");
-    asset_manager_->AddTexture(renderer_, "bullet-image", "./assets/images/bullet.png");
-    asset_manager_->AddTexture(renderer_, "tree-image", "./assets/images/tree.png");
-
-    asset_manager_->AddFont("arial-font", "./assets/fonts/arial.ttf", 20);
-    asset_manager_->AddFont("charriot-font", "./assets/fonts/charriot.ttf", 20);
-
-    // Load Tilemap
-    asset_manager_->AddTexture(renderer_, "jungle-tile-map", "./assets/tilemaps/jungle.png");
-
-    std::ifstream file("./assets/tilemaps/jungle.map");
-    std::string line;
-    int tileMapColumns = 10;
-    int rowNumber = 0;
-    int columnNumber = 0;
-    int tileWidth = 32;
-    int tileHeight = 32;
-    double tileMapScale = 4.0;
-
-    while (std::getline(file, line)) {
-        std::stringstream ss(line);
-        std::string value;
-        std::vector<std::string> row;
-        columnNumber = 0;
-
-        while (std::getline(ss, value, ',')) {
-            row.push_back(value);
-        }
-
-        for (const auto& item : row) {
-            int value = std::stoi(item);
-            int rowIndex = value / tileMapColumns;
-            int columnIndex = value % tileMapColumns;
-
-            auto tile = registry_->CreateEntity();
-            tile.Group("tiles");
-            tile.AddComponent<TransformComponent>(glm::vec2(tileWidth * columnNumber * tileMapScale, tileHeight * rowNumber * tileMapScale), glm::vec2(tileMapScale, tileMapScale), 0.0);
-            tile.AddComponent<SpriteComponent>("jungle-tile-map", tileWidth, tileHeight, 0, false, tileWidth * columnIndex, tileHeight * rowIndex);
-            columnNumber++;
-        }
-
-        rowNumber++;
-    }
-    file.close();
-
-    mapWidth = columnNumber * tileWidth * tileMapScale;
-    mapHeight = rowNumber * tileHeight * tileMapScale;
-
-    // Create entities
-    // Chopper
-    auto chopper = registry_->CreateEntity();
-    chopper.Tag("player");
-    chopper.AddComponent<TransformComponent>(glm::vec2(10, 30), glm::vec2(3, 3), 0);
-    chopper.AddComponent<RigidBodyComponent>(glm::vec2(0, 0));
-    chopper.AddComponent<SpriteComponent>("chopper-image", 32, 32, 1);
-    chopper.AddComponent<BoxColliderComponent>(32, 32);
-    chopper.AddComponent<AnimationComponent>(2, 15, true);
-    chopper.AddComponent<KeyboardControlComponent>(250.0);
-    chopper.AddComponent<CameraFollowComponent>();
-    chopper.AddComponent<ProjectileEmitterComponent>(glm::vec2(150, 150), 5000, 0, 100, true);
-    chopper.AddComponent<HealthComponent>(100);
-
-    //  Radar
-    auto radar = registry_->CreateEntity();
-    radar.AddComponent<TransformComponent>(glm::vec2(windowWidth - 74, 10), glm::vec2(1, 1), 45.0);
-    radar.AddComponent<SpriteComponent>("radar-image", 64, 64, 2, true);
-    radar.AddComponent<AnimationComponent>(8, 5, true);
-
-    // Create an entity for the tank
-    auto tank = registry_->CreateEntity();
-    tank.Group("enemies");
-    tank.AddComponent<TransformComponent>(glm::vec2(500, 500), glm::vec2(3, 3), 0);
-    tank.AddComponent<RigidBodyComponent>(glm::vec2(35, 0));
-    tank.AddComponent<SpriteComponent>("tank-image", 32, 32, 1);
-    tank.AddComponent<BoxColliderComponent>(32, 32);
-    tank.AddComponent<ProjectileEmitterComponent>(glm::vec2(0, -90), 10000, 5000, 33, false);
-    tank.AddComponent<HealthComponent>(100);
-
-    // Create an entity for the truck
-    auto truck = registry_->CreateEntity();
-    truck.Group("enemies");
-    truck.AddComponent<TransformComponent>(glm::vec2(120, 500), glm::vec2(3, 3), 0.0);
-    truck.AddComponent<RigidBodyComponent>(glm::vec2(0, 0));
-    truck.AddComponent<SpriteComponent>("truck-image", 32, 32, 1);
-    truck.AddComponent<BoxColliderComponent>(32, 32);
-    truck.AddComponent<ProjectileEmitterComponent>(glm::vec2(100, 0), 10000, 2000, 33, false);
-    truck.AddComponent<HealthComponent>(100);
-
-    auto tree1 = registry_->CreateEntity();
-    tree1.Group("obstacles");
-    tree1.AddComponent<TransformComponent>(glm::vec2(650, 500), glm::vec2(3, 3), 0.0);
-    tree1.AddComponent<SpriteComponent>("tree-image", 16, 32, 2);
-    tree1.AddComponent<BoxColliderComponent>(16, 32);
-
-    auto tree2 = registry_->CreateEntity();
-    tree2.Group("obstacles");
-    tree2.AddComponent<TransformComponent>(glm::vec2(400, 500), glm::vec2(3, 3), 0.0);
-    tree2.AddComponent<SpriteComponent>("tree-image", 16, 32, 2);
-    tree2.AddComponent<BoxColliderComponent>(16, 32);
-}
-
-void Game::Setup() {
-    LoadLevel(1);
+    LevelLoader loader;
+    lua.open_libraries(sol::lib::base, sol::lib::math);
+    loader.LoadLevel(lua, registry_, asset_manager_, renderer_, 1);
 }
 
 void Game::ProcessInput() {

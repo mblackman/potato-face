@@ -3,6 +3,7 @@
 #include <SDL2/SDL.h>
 
 #include <memory>
+#include <sol/sol.hpp>
 
 #include "../AssetManager/AssetManager.h"
 #include "../ECS/ECS.h"
@@ -31,7 +32,6 @@ class Game {
     void Update();
     void Render();
     void Setup();
-    void LoadLevel(int level);
     void SubscribeToEvents(std::unique_ptr<EventBus>& eventBus);
     void OnKeyInputEvent(KeyInputEvent& event);
     KeyInputEvent GetKeyInputEvent(SDL_KeyboardEvent* event);
@@ -42,6 +42,8 @@ class Game {
     bool is_running_;
     bool show_colliders_;
     int milliseconds_previous_frame_ = 0;
+
+    sol::state lua;
     std::unique_ptr<Registry> registry_;
     std::unique_ptr<AssetManager> asset_manager_;
     std::unique_ptr<EventBus> event_bus_;

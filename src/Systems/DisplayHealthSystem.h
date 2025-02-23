@@ -76,7 +76,7 @@ class DisplayHealthSystem : public System {
    private:
     void CreateHealthTracker(std::unique_ptr<Registry>& registry, int entityId) {
         auto healthTracker = registry->CreateEntity();
-        healthTracker.AddComponent<TextLabelComponent>(glm::vec2(0, 0), "100", "charriot-font", SDL_Color{255, 255, 255}, false);
+        healthTracker.AddComponent<TextLabelComponent>(glm::vec2(0, 0), "100", "arial-font-10", SDL_Color{255, 255, 255}, false);
         healthTracker.AddComponent<SquarePrimitiveComponent>(glm::vec2(0, 0), 100, 10, SDL_Color{255, 0, 0}, false);
         health_trackers_[entityId] = std::make_shared<Entity>(healthTracker);
     }
