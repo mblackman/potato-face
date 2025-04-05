@@ -7,6 +7,8 @@ SRC_FILES = ./src/*.cpp \
 			./src/General/*.cpp \
 			./src/ECS/*.cpp \
 			./src/AssetManager/*.cpp \
+			./src/MapEditor/*.cpp \
+			./src/Renderer/*.cpp \
 			./libs/imgui/*.cpp 
 LINKER_FLAGS = -lSDL2 -lSDL2_image -lSDL2_ttf -lSDL2_mixer -llua5.3
 OBJ_NAME = bin/gameengine
@@ -21,6 +23,9 @@ build:
 
 run:
 	./${OBJ_NAME}
+
+run-map:
+	./${OBJ_NAME} -m
 
 clean:
 	rm -rf bin/

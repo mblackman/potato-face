@@ -23,7 +23,6 @@ class DamageSystem : public System {
         auto b = event.entityB;
         auto aId = std::to_string(event.entityA.GetId());
         auto bId = std::to_string(event.entityB.GetId());
-        Logger::Info("Damage collision received between: " + aId + " and " + bId + ".");
 
         if (a.InGroup("projectiles") && (b.HasTag("player") || b.InGroup("enemies"))) {
             OnProjectileHit(a, b);

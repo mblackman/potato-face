@@ -21,6 +21,27 @@
             ]
         },
         {
+            "name": "Debug Potato-Face Map Editor",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/bin/gameengine",
+            "args": [
+                "-m"
+            ],
+            "cwd": "${workspaceFolder}",
+            "preLaunchTask": "debug",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ]
+        },
+        {
             "name": "Run Potato-Face Engine",
             "type": "cppdbg",
             "request": "launch",

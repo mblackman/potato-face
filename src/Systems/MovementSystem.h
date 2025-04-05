@@ -24,7 +24,6 @@ class MovementSystem : public System {
         auto b = event.entityB;
         auto aId = std::to_string(event.entityA.GetId());
         auto bId = std::to_string(event.entityB.GetId());
-        Logger::Info("Movement collision received between: " + aId + " and " + bId + ".");
 
         if (a.InGroup("enemies") && b.InGroup("obstacles")) {
             OnObstacleCollision(a);

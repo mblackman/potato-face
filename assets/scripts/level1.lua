@@ -46,7 +46,7 @@ Level = {
                     texture_asset_id = "chopper-texture",
                     width = 32,
                     height = 32,
-                    z_index = 4,
+                    layer = 4,
                     fixed = false,
                     src_rect_x = 0,
                     src_rect_y = 0
@@ -91,7 +91,7 @@ Level = {
                     texture_asset_id = "tank-texture",
                     width = 32,
                     height = 32,
-                    z_index = 2
+                    layer = 2
                 },
                 boxcollider = {
                     width = 25,
@@ -123,7 +123,7 @@ Level = {
                     texture_asset_id = "truck-texture",
                     width = 32,
                     height = 32,
-                    z_index = 2
+                    layer = 2
                 },
                 boxcollider = {
                     width = 25,
@@ -161,7 +161,7 @@ Level = {
                     texture_asset_id = "truck-texture",
                     width = 32,
                     height = 32,
-                    z_index = 2
+                    layer = 2
                 },
                 boxcollider = {
                     width = 25,

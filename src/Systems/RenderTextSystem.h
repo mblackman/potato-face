@@ -1,10 +1,10 @@
 #pragma once
 
-#include <SDL2/SDL.h>
-
-#include "../AssetManager/AssetManager.h"
 #include "../Components/TextLabelComponent.h"
 #include "../ECS/ECS.h"
+#include "../Renderer/RenderKey.h"
+#include "../Renderer/RenderQueue.h"
+#include "../Renderer/RenderableType.h"
 
 class RenderTextSystem : public System {
    public:
@@ -14,31 +14,18 @@ class RenderTextSystem : public System {
 
     ~RenderTextSystem() = default;
 
-    void Update(SDL_Renderer* renderer, std::unique_ptr<AssetManager>& assetManager, SDL_Rect& camera) {
+    void Update(RenderQueue& renderQueue) {
         auto entities = GetEntities();
 
         for (auto entity : entities) {
-            const auto textLabel = entity.GetComponent<TextLabelComponent>();
-            const auto font = assetManager->GetFont(textLabel.fontId);
-            SDL_Surface* surface = TTF_RenderText_Blended(
-                font,
-                textLabel.text.c_str(),
-                textLabel.color);
-            SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
-            SDL_FreeSurface(surface);
+            auto text = entity.GetComponent<TextLabelComponent>();
+            RenderKey renderKey(
+                text.layer,
+                text.position.y,
+                RenderableType::TEXT,
+                entity);
 
-            int labelWidth = 0;
-            int labelHeight = 0;
-
-            SDL_QueryTexture(texture, nullptr, nullptr, &labelWidth, &labelHeight);
-
-            SDL_Rect destRect = {
-                static_cast<int>(textLabel.position.x - (textLabel.isFixed ? 0 : camera.x)),
-                static_cast<int>(textLabel.position.y - (textLabel.isFixed ? 0 : camera.y)),
-                labelWidth,
-                labelHeight};
-
-            SDL_RenderCopy(renderer, texture, nullptr, &destRect);
+            renderQueue.AddRenderKey(renderKey);
         }
     }
 };

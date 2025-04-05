@@ -16,6 +16,9 @@
 #include "../ECS/ECS.h"
 #include "../Events/KeyInputEvent.h"
 #include "../General/Logger.h"
+#include "../MapEditor/MapEditor.h"
+#include "../Renderer/RenderQueue.h"
+#include "../Renderer/Renderer.h"
 #include "../Systems/AnimationSystem.h"
 #include "../Systems/CameraFollowSystem.h"
 #include "../Systems/CollisionSystem.h"
@@ -28,9 +31,10 @@
 #include "../Systems/ProjectileLifecycleSystem.h"
 #include "../Systems/RenderGUISystem.h"
 #include "../Systems/RenderPrimitiveSystem.h"
-#include "../Systems/RenderSystem.h"
+#include "../Systems/RenderSpriteSystem.h"
 #include "../Systems/RenderTextSystem.h"
 #include "../Systems/ScriptSystem.h"
+#include "../Systems/UIButtonSystem.h"
 #include "./LevelLoader.h"
 
 int Game::windowWidth;
@@ -39,14 +43,16 @@ int Game::mapWidth;
 int Game::mapHeight;
 
 Game::Game() : window_(nullptr),
-               renderer_(nullptr),
+               sdl_renderer_(nullptr),
                camera_(),
                is_running_(false),
                show_colliders_(false),
-               milliseconds_previous_frame_() {
+               milliseconds_previous_frame_(),
+               render_queue_() {
     registry_ = std::make_unique<Registry>();
     asset_manager_ = std::make_unique<AssetManager>();
     event_bus_ = std::make_unique<EventBus>();
+    renderer_ = std::make_unique<Renderer>();
     Logger::Info("Game Constructor called.");
 }
 
@@ -85,24 +91,24 @@ void Game::Initialize() {
         return;
     }
 
-    renderer_ = SDL_CreateRenderer(window_, -1, 0);
+    sdl_renderer_ = SDL_CreateRenderer(window_, -1, 0);
 
-    if (!renderer_) {
+    if (!sdl_renderer_) {
         Logger::Error("SDL_CreateRenderer Error: " + std::string(SDL_GetError()));
         return;
     }
 
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
-    ImGui_ImplSDL2_InitForSDLRenderer(window_, renderer_);
-    ImGui_ImplSDLRenderer2_Init(renderer_);
+    ImGui_ImplSDL2_InitForSDLRenderer(window_, sdl_renderer_);
+    ImGui_ImplSDLRenderer2_Init(sdl_renderer_);
 
     camera_.x = 0;
     camera_.y = 0;
     camera_.w = windowWidth;
     camera_.h = windowHeight;
 
-    SDL_SetRenderDrawColor(renderer_, 21, 21, 21, 255);
+    SDL_SetRenderDrawColor(sdl_renderer_, 21, 21, 21, 255);
 
     is_running_ = true;
 }
@@ -111,13 +117,13 @@ void Game::Destroy() {
     ImGui_ImplSDLRenderer2_Shutdown();
     ImGui_ImplSDL2_Shutdown();
     ImGui::DestroyContext();
-    SDL_DestroyRenderer(renderer_);
+    SDL_DestroyRenderer(sdl_renderer_);
     SDL_DestroyWindow(window_);
     SDL_Quit();
 }
 
-void Game::Run() {
-    Setup();
+void Game::Run(bool isMapEditor) {
+    Setup(isMapEditor);
 
     while (is_running_) {
         ProcessInput();
@@ -126,27 +132,38 @@ void Game::Run() {
     }
 }
 
-void Game::Setup() {
+void Game::Setup(bool isMapEditor) {
+    registry_->AddSystem<CameraFollowSystem>();
+    registry_->AddSystem<ProjectileEmitSystem>();
+    registry_->AddSystem<ProjectileLifecycleSystem>();
+    registry_->AddSystem<DisplayHealthSystem>();
+    registry_->AddSystem<DamageSystem>();
     registry_->AddSystem<MovementSystem>();
-    registry_->AddSystem<RenderSystem>();
+
+    registry_->AddSystem<RenderSpriteSystem>();
     registry_->AddSystem<RenderTextSystem>();
     registry_->AddSystem<RenderPrimitiveSystem>();
     registry_->AddSystem<RenderGUISystem>();
     registry_->AddSystem<AnimationSystem>();
     registry_->AddSystem<CollisionSystem>();
     registry_->AddSystem<DrawColliderSystem>();
-    registry_->AddSystem<DamageSystem>();
     registry_->AddSystem<KeyboardControlSystem>();
-    registry_->AddSystem<CameraFollowSystem>();
-    registry_->AddSystem<ProjectileEmitSystem>();
-    registry_->AddSystem<ProjectileLifecycleSystem>();
-    registry_->AddSystem<DisplayHealthSystem>();
     registry_->AddSystem<ScriptSystem>();
+    registry_->AddSystem<UIButtonSystem>();
 
-    LevelLoader loader;
     lua.open_libraries(sol::lib::base, sol::lib::math);
-    registry_->GetSystem<ScriptSystem>().CreateLuaBindings(lua);
-    loader.LoadLevel(lua, registry_, asset_manager_, renderer_, 1);
+    lua["game_window_width"] = windowWidth;
+    lua["game_window_height"] = windowHeight;
+
+    if (isMapEditor) {
+        MapEditor editor;
+        editor.Load(lua, registry_, asset_manager_, sdl_renderer_);
+    } else {
+        LevelLoader loader;
+
+        registry_->GetSystem<ScriptSystem>().CreateLuaBindings(lua);
+        loader.LoadLevel(lua, registry_, asset_manager_, sdl_renderer_, 1);
+    }
 }
 
 void Game::ProcessInput() {
@@ -172,6 +189,12 @@ void Game::ProcessInput() {
                 event_bus_->EmitEvent<KeyInputEvent>(keyInputEvent);
                 break;
             }
+            case SDL_MOUSEBUTTONDOWN:
+            case SDL_MOUSEBUTTONUP: {
+                SDL_MouseButtonEvent mouseButtonEvent = event.button;
+                event_bus_->EmitEvent<MouseInputEvent>(mouseButtonEvent);
+                break;
+            }
             default:
                 break;
         }
@@ -191,6 +214,7 @@ void Game::Update() {
     registry_->GetSystem<KeyboardControlSystem>().SubscribeToEvents(event_bus_);
     registry_->GetSystem<ProjectileEmitSystem>().SubscribeToEvents(event_bus_);
     registry_->GetSystem<MovementSystem>().SubscribeToEvents(event_bus_);
+    registry_->GetSystem<UIButtonSystem>().SubscribeToEvents(event_bus_);
     SubscribeToEvents(event_bus_);
 
     // Calculate delta time
@@ -212,20 +236,24 @@ void Game::Update() {
 }
 
 void Game::Render() {
-    SDL_SetRenderDrawColor(renderer_, 21, 21, 21, 255);
-    SDL_RenderClear(renderer_);
+    SDL_SetRenderDrawColor(sdl_renderer_, 21, 21, 21, 255);
+    SDL_RenderClear(sdl_renderer_);
 
-    // TODO: Render with ECS
-    registry_->GetSystem<RenderSystem>().Update(renderer_, asset_manager_, camera_);
-    registry_->GetSystem<RenderTextSystem>().Update(renderer_, asset_manager_, camera_);
-    registry_->GetSystem<RenderPrimitiveSystem>().Update(renderer_, camera_);
+    // Render the game
+    render_queue_.Clear();
+    registry_->GetSystem<RenderSpriteSystem>().Update(render_queue_, camera_);
+    registry_->GetSystem<RenderTextSystem>().Update(render_queue_);
+    registry_->GetSystem<RenderPrimitiveSystem>().Update(render_queue_);
+
+    render_queue_.Sort();
+    renderer_->Render(render_queue_, sdl_renderer_, camera_, asset_manager_);
 
     if (show_colliders_) {
-        registry_->GetSystem<DrawColliderSystem>().Update(renderer_, camera_);
-        registry_->GetSystem<RenderGUISystem>().Update(renderer_, registry_);
+        registry_->GetSystem<DrawColliderSystem>().Update(sdl_renderer_, camera_);
+        registry_->GetSystem<RenderGUISystem>().Update(sdl_renderer_, registry_);
     }
 
-    SDL_RenderPresent(renderer_);
+    SDL_RenderPresent(sdl_renderer_);
 }
 
 void Game::SubscribeToEvents(std::unique_ptr<EventBus>& eventBus) {
