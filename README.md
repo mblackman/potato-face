@@ -14,6 +14,20 @@ This engine utilizes:
 
 Run this command to install the necessary library and tools:
 
-``` bash
+```sh
 sudo apt install build-essential libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev libsdl2-mixer-dev liblua5.3-dev lua5.3 libspdlog-dev
+```
+
+## Run Instructions
+
+Build the engine and the game with:
+
+```sh
+make
+```
+
+Start the game with:
+
+```sh
+make run
 ```
