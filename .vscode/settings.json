@@ -83,7 +83,8 @@
         "cinttypes": "cpp",
         "typeinfo": "cpp",
         "variant": "cpp",
-        "format": "cpp"
+        "format": "cpp",
+        "unordered_set": "cpp"
     },
     "Workspace_Formatter.includePattern": [
         "src/**/*.{cpp,h}"

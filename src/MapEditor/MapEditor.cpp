@@ -18,6 +18,8 @@ void MapEditor::Load(sol::state& lua, const std::unique_ptr<Registry>& registry,
     ECSLoader loader{};
     sol::table document = lua["document"];
 
+    loader.LoadEntity(document, registry);
+
     // Load assets for the editor
     sol::table assets = document["assets"];
     int i = 0;

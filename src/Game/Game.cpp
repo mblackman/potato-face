@@ -154,14 +154,13 @@ void Game::Setup(bool isMapEditor) {
     lua.open_libraries(sol::lib::base, sol::lib::math);
     lua["game_window_width"] = windowWidth;
     lua["game_window_height"] = windowHeight;
+    registry_->GetSystem<ScriptSystem>().CreateLuaBindings(lua);
 
     if (isMapEditor) {
         MapEditor editor;
         editor.Load(lua, registry_, asset_manager_, sdl_renderer_);
     } else {
         LevelLoader loader;
-
-        registry_->GetSystem<ScriptSystem>().CreateLuaBindings(lua);
         loader.LoadLevel(lua, registry_, asset_manager_, sdl_renderer_, 1);
     }
 }
@@ -215,6 +214,7 @@ void Game::Update() {
     registry_->GetSystem<ProjectileEmitSystem>().SubscribeToEvents(event_bus_);
     registry_->GetSystem<MovementSystem>().SubscribeToEvents(event_bus_);
     registry_->GetSystem<UIButtonSystem>().SubscribeToEvents(event_bus_);
+    registry_->GetSystem<ScriptSystem>().SubscribeToEvents(event_bus_);
     SubscribeToEvents(event_bus_);
 
     // Calculate delta time
@@ -279,7 +279,6 @@ void Game::OnKeyInputEvent(KeyInputEvent& event) {
 
 KeyInputEvent Game::GetKeyInputEvent(SDL_KeyboardEvent* event) {
     bool isPressed = event->state == SDL_PRESSED;
-
     return KeyInputEvent(
         event->keysym.sym,
         static_cast<SDL_Keymod>(event->keysym.mod),

@@ -9,7 +9,6 @@ struct KeyInputEvent : public Event {
     SDL_Keycode inputKey;
     SDL_Keymod inputModifier;
     bool isPressed;
-    std::string inputString;
 
     KeyInputEvent(SDL_Keycode inputKey, SDL_Keymod inputModifier, bool isPressed)
         : inputKey(inputKey),
