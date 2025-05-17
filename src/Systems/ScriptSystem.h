@@ -69,6 +69,7 @@ class ScriptSystem : public System {
         lua.set_function("set_sprite_src_rect", &SetEntitySpriteSrcRect);
         lua.set_function("is_key_pressed", &ScriptSystem::IsKeyPressed, this);
         lua.set_function("is_key_held", &ScriptSystem::IsKeyHeld, this);
+        lua.set_function("quit_game", &Game::Quit);
     }
 
     void Update(double deltaTime, int elapsedTime) {

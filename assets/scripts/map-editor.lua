@@ -26,7 +26,11 @@ document = {
             [0] = 
             function(entity, delta_time, elapsed_time) 
                 if is_key_pressed("w") and is_key_held("ctrl") then
-                    print("Ctrl+W key pressed")
+                    print("Ctrl+W key pressed. Write tilemap to file.")
+                end
+                if is_key_pressed("q") and is_key_held("ctrl") then
+                    print("Ctrl+Q key pressed. Quit game.")
+                    quit_game()
                 end
             end
         }

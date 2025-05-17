@@ -23,6 +23,7 @@ class Game {
     void Initialize();
     void Destroy();
     void Run(bool isMapEditor);
+    static void Quit() { s_is_running_ = false; }
 
     static int windowWidth;
     static int windowHeight;
@@ -41,7 +42,7 @@ class Game {
     SDL_Window* window_;
     SDL_Renderer* sdl_renderer_;
     SDL_Rect camera_;
-    bool is_running_;
+    static inline bool s_is_running_{false};
     bool show_colliders_;
     int milliseconds_previous_frame_ = 0;
 

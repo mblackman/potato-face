@@ -45,7 +45,6 @@ int Game::mapHeight;
 Game::Game() : window_(nullptr),
                sdl_renderer_(nullptr),
                camera_(),
-               is_running_(false),
                show_colliders_(false),
                milliseconds_previous_frame_(),
                render_queue_() {
@@ -110,7 +109,7 @@ void Game::Initialize() {
 
     SDL_SetRenderDrawColor(sdl_renderer_, 21, 21, 21, 255);
 
-    is_running_ = true;
+    s_is_running_ = true;
 }
 
 void Game::Destroy() {
@@ -125,7 +124,7 @@ void Game::Destroy() {
 void Game::Run(bool isMapEditor) {
     Setup(isMapEditor);
 
-    while (is_running_) {
+    while (s_is_running_) {
         ProcessInput();
         Update();
         Render();
@@ -179,7 +178,7 @@ void Game::ProcessInput() {
 
         switch (event.type) {
             case SDL_QUIT:
-                is_running_ = false;
+                s_is_running_ = false;
                 break;
 
             case SDL_KEYDOWN:
@@ -267,7 +266,7 @@ void Game::OnKeyInputEvent(KeyInputEvent& event) {
 
     switch (event.inputKey) {
         case SDLK_ESCAPE:
-            is_running_ = false;
+            s_is_running_ = false;
             break;
         case SDLK_F5:
             show_colliders_ = !show_colliders_;
