@@ -13,6 +13,33 @@ edit_grid_scale = game_window_width / edit_grid_width
 
 selected_tile_index = 0
 
+tile_grid = {}
+
+for i=0, edit_grid_num_tiles_high * edit_grid_num_tiles_wide do
+    tile_grid[i] = 0
+end
+
+function save_grid(filename, grid)
+    local file = io.open(filename, "w")
+    if file then
+        for i = 0, edit_grid_num_tiles_high - 1 do
+            for j = 0, edit_grid_num_tiles_wide - 1 do
+                local index = i * edit_grid_num_tiles_wide + j
+                file:write(grid[index])
+                if j < edit_grid_num_tiles_wide - 1 then
+                    file:write(",")
+                end
+            end
+            if i < edit_grid_num_tiles_high - 1 then
+                file:write("\n")
+            end
+        end
+        file:close()
+    else
+        print("Error opening file for writing: " .. filename)
+    end
+end
+
 document = {    
     assets = {
         [0] =
@@ -27,6 +54,7 @@ document = {
             function(entity, delta_time, elapsed_time) 
                 if is_key_pressed("w") and is_key_held("ctrl") then
                     print("Ctrl+W key pressed. Write tilemap to file.")
+                    save_grid("tilemap.map", tile_grid)
                 end
                 if is_key_pressed("q") and is_key_held("ctrl") then
                     print("Ctrl+Q key pressed. Quit game.")
@@ -82,6 +110,7 @@ for i=0, edit_grid_num_tiles_high-1 do
 
                                 -- Update the tilemap file
                                 print("Updating tilemap file with new tile index "..selected_tile_index)
+                                tile_grid[tile_index] = selected_tile_index
                                 print("src_rect_x: "..src_rect_x)
                                 print("src_rect_y: "..src_rect_y)
                             end

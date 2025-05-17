@@ -150,7 +150,7 @@ void Game::Setup(bool isMapEditor) {
     registry_->AddSystem<ScriptSystem>();
     registry_->AddSystem<UIButtonSystem>();
 
-    lua.open_libraries(sol::lib::base, sol::lib::math);
+    lua.open_libraries(sol::lib::base, sol::lib::math, sol::lib::io);
     lua["game_window_width"] = windowWidth;
     lua["game_window_height"] = windowHeight;
     registry_->GetSystem<ScriptSystem>().CreateLuaBindings(lua);
